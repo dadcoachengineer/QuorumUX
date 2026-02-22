@@ -262,7 +262,7 @@ export interface GlobalConfig {
 // ─── CLI Options ─────────────────────────────────────────────────────────────
 
 export interface PipelineOptions {
-  /** Path to quorum.config.ts */
+  /** Path to quorumux.config.ts */
   config: string;
 
   /** Specific run directory (auto-detects latest if omitted) */
