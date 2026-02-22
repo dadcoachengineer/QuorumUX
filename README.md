@@ -109,7 +109,7 @@ Commands:
   init                          Interactive project setup wizard
   run [options]                 Run the analysis pipeline (default)
   status                        Show project config, API key, and latest run info
-  compare <baseline> <current>  Compare two runs side-by-side
+  compare [--json] <baseline> <current>  Compare two runs side-by-side
 
 Options:
   --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
@@ -161,10 +161,11 @@ When persona IDs match an archetype, QuorumUX automatically injects behavioral c
 
 ### ux-analysis-report.md
 
-- **Overall assessment**: UX score (1-10), launch readiness, strengths, critical path
+- **Overall assessment**: UX score (X/100 + X.X/10), launch readiness, strengths, critical path. Adjusted score shown when test-infra issues are discounted.
 - **Consensus issues**: High-confidence findings from 2+ models, with video insight annotations
 - **Video-only issues**: Temporal friction invisible to screenshots (hesitation, loading, confusion)
 - **Model-unique issues**: Single-model findings that need human review
+- **Test infrastructure issues**: Separated section for test automation problems (weighted 0.25× in adjusted score)
 - **Disagreements**: Where models actively contradict each other
 
 ### github-issues.md
@@ -173,7 +174,7 @@ Ready-to-paste `gh issue create` commands for every finding, with severity label
 
 ### ux-analysis-report.json
 
-Flat JSON with all issues (consensus, video-only, model-unique) in a single array with `type` discriminator. Includes score, launch readiness, models, personas, strengths, and critical path. Designed for CI integration and dashboards.
+Flat JSON with all issues (consensus, video-only, model-unique) in a single array with `type` discriminator. Includes score, adjusted score, launch readiness, models, personas, strengths, and critical path. Each issue carries a stable `QUX-xxxxxxxx` ID and `source` classification (`app` or `test-infra`). Designed for CI integration and dashboards.
 
 ### synthesis.json
 

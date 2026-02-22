@@ -57,7 +57,8 @@ src/
     ├── costs.ts             # MODEL_PRICING map, CostTracker class
     ├── files.ts             # File system helpers
     ├── logger.ts            # Structured logger (log, error, stage, box, progress)
-    └── prompt.ts            # Interactive CLI prompts (ask, select, confirm)
+    ├── prompt.ts            # Interactive CLI prompts (ask, select, confirm)
+    └── scoring.ts           # normalizeScore(), calculateAdjustedScore()
 ```
 
 ### Key Patterns
@@ -72,6 +73,11 @@ src/
 - **Config validation** runs in `loadConfig()` — checks all required fields and reports every error at once (not one at a time).
 - **API key redaction** — `redactApiKey()` in `openrouter.ts` strips `sk-or-*` patterns from error messages before they reach logs.
 - **Tool checks** — `extractFrames()` verifies `ffmpeg` and `montage` exist before running Stage 1, with install instructions if missing.
+- **Stable issue IDs** — `generateStableId()` in `synthesize.ts` produces deterministic `QUX-xxxxxxxx` hashes from SHA-256 of `title:discriminator`. Model-generated ordinal IDs (`ISSUE-001`) are replaced post-synthesis; the ordinal is preserved as `index`.
+- **Test-infra classification** — Issues carry `source: 'app' | 'test-infra'`. The synthesis prompt (Rule 7) instructs the model to classify. Missing `source` defaults to `'app'` for backward compatibility.
+- **Adjusted scoring** — `calculateAdjustedScore()` in `utils/scoring.ts` discounts test-infra issue severity weights to 0.25×. Returns `undefined` when no test-infra issues exist.
+- **Score normalization** — `normalizeScore()` converts legacy 0–10 scores to 0–100 (multiply by 10 if ≤ 10).
+- **Compare fuzzy matching** — `matchIssues()` in `compare.ts` does two-pass matching: exact QUX-ID first, then Jaccard word-overlap similarity fallback (threshold >0.6, or >0.4 with same category+severity). Supports comparing pre-0.3.0 runs with legacy ordinal IDs.
 
 ### Type Exports
 
@@ -97,8 +103,8 @@ Importing the package for types does **not** trigger the CLI — `index.ts` has 
 - **npm package**: `quorum-ux` (hyphenated, for npm).
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
-- **Published on npm** as `quorum-ux@0.2.0`.
-- **Test suite**: vitest, 80 unit tests across 7 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, `compareSyntheses`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
+- **Published on npm** as `quorum-ux@0.3.0`.
+- **Test suite**: vitest, 108 unit tests across 9 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, `compareSyntheses`, `jaccardSimilarity`, `matchIssues`, `generateStableId`, `normalizeScore`, `calculateAdjustedScore`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
 - **Module system**: tsconfig uses `module: "NodeNext"` / `moduleResolution: "NodeNext"`. All relative imports in `.ts` source must use `.js` extensions (e.g., `from './types.js'`). TS resolves them to `.ts` at compile time but emits them as-is for Node ESM.
 - **CI**: GitHub Actions runs on push to `main` and PRs — test (Node 18/20/22 matrix), typecheck, and build (with dist test-file leak check).
 - **Stage outputs** go in `{runDir}/reports/` — not the project root. Override with `--output-dir`.
