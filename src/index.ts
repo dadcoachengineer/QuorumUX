@@ -275,7 +275,7 @@ function dryRun(config: QuorumUXConfig, runDir: string, options: PipelineOptions
 /**
  * Parse command-line arguments
  */
-function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
+export function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
   const options: any = {
     config: './quorumux.config.ts',
   };
@@ -338,7 +338,7 @@ async function loadConfig(configPath: string): Promise<QuorumUXConfig> {
 /**
  * Validate config has all required fields. Throws with all errors at once.
  */
-function validateConfig(config: any): void {
+export function validateConfig(config: any): void {
   const errors: string[] = [];
 
   for (const field of ['name', 'description', 'domain', 'appUrl', 'userJourney', 'artifactsDir'] as const) {
