@@ -1,12 +1,12 @@
 /**
- * Quorum — Core Type Definitions
+ * QuorumUX — Core Type Definitions
  *
  * These types define the contract between pipeline stages and project configurations.
  */
 
 // ─── Project Configuration ───────────────────────────────────────────────────
 
-export interface QuorumConfig {
+export interface QuorumUXConfig {
   /** Project display name */
   name: string;
 
@@ -251,7 +251,7 @@ export interface PersonaArchetype {
   accessibilityNeeds?: string[];
 }
 
-// ─── Global Config (~/.quorum/config.json) ──────────────────────────────────
+// ─── Global Config (~/.quorumux/config.json) ──────────────────────────────────
 
 export interface GlobalConfig {
   apiKey?: string;

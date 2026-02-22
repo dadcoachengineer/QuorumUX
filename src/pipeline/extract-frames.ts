@@ -1,5 +1,5 @@
 /**
- * Quorum Pipeline Stage 1: Extract Frames
+ * QuorumUX Pipeline Stage 1: Extract Frames
  *
  * Uses ffmpeg for video frame extraction at configurable fps.
  * Uses ImageMagick montage for screenshot grid creation.
@@ -8,11 +8,11 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumConfig } from '../types';
+import { QuorumUXConfig } from '../types';
 import * as logger from '../utils/logger';
 import { ensureDir } from '../utils/files';
 
-export async function extractFrames(config: QuorumConfig, runDir: string): Promise<void> {
+export async function extractFrames(config: QuorumUXConfig, runDir: string): Promise<void> {
   logger.stage('Stage 1: Frame Extraction & Grid Generation');
 
   const framesDir = path.join(runDir, 'frames');
@@ -46,7 +46,7 @@ export async function extractFrames(config: QuorumConfig, runDir: string): Promi
 async function extractVideoFrames(
   videosDir: string,
   framesDir: string,
-  config: QuorumConfig
+  config: QuorumUXConfig
 ): Promise<void> {
   logger.log('  Extracting video frames...');
 

@@ -1,5 +1,5 @@
 /**
- * Quorum CLI — Entry Point
+ * QuorumUX CLI — Entry Point
  *
  * Subcommands:
  *   init        Interactive project setup wizard
@@ -16,7 +16,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumConfig, PipelineOptions } from './types';
+import { QuorumUXConfig, PipelineOptions } from './types';
 import * as logger from './utils/logger';
 import { CostTracker, getPricing } from './utils/costs';
 import { resolveApiKey } from './config/global';
@@ -82,7 +82,7 @@ async function runPipeline(args: string[]): Promise<void> {
     if (!apiKey) {
       logger.error(
         'No OpenRouter API key found.\n' +
-          '  Set OPENROUTER_API_KEY env var, add it to .env, or run `quorum init` to configure.'
+          '  Set OPENROUTER_API_KEY env var, add it to .env, or run `quorumux init` to configure.'
       );
       process.exit(1);
     }
@@ -92,7 +92,7 @@ async function runPipeline(args: string[]): Promise<void> {
     const pipelineStart = Date.now();
 
     logger.box([
-      `Quorum UX Analysis Pipeline`,
+      `QuorumUX UX Analysis Pipeline`,
       `Project: ${config.name}`,
       `Run: ${path.basename(runDir)}`,
       `Starting from stage ${startStage}`,
@@ -137,7 +137,7 @@ async function runPipeline(args: string[]): Promise<void> {
 /**
  * Dry run: scan artifacts and print what would happen without API calls
  */
-function dryRun(config: QuorumConfig, runDir: string, options: PipelineOptions): void {
+function dryRun(config: QuorumUXConfig, runDir: string, options: PipelineOptions): void {
   logger.box([
     'DRY RUN — No API calls will be made',
     '',
@@ -272,7 +272,7 @@ function dryRun(config: QuorumConfig, runDir: string, options: PipelineOptions):
  */
 function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
   const options: any = {
-    config: './quorum.config.ts',
+    config: './quorumux.config.ts',
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -296,7 +296,7 @@ function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
     } else if (arg === '--dry-run') {
       options.dryRun = true;
     } else {
-      throw new Error(`Unknown option: ${arg}. Run 'quorum --help' for usage.`);
+      throw new Error(`Unknown option: ${arg}. Run 'quorumux --help' for usage.`);
     }
   }
 
@@ -304,13 +304,13 @@ function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
 }
 
 /**
- * Load QuorumConfig via dynamic import
+ * Load QuorumUXConfig via dynamic import
  */
-async function loadConfig(configPath: string): Promise<QuorumConfig> {
+async function loadConfig(configPath: string): Promise<QuorumUXConfig> {
   const absolutePath = path.resolve(configPath);
 
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(`Config file not found: ${absolutePath}\n  Run 'quorum init' to create one.`);
+    throw new Error(`Config file not found: ${absolutePath}\n  Run 'quorumux init' to create one.`);
   }
 
   try {
@@ -321,7 +321,7 @@ async function loadConfig(configPath: string): Promise<QuorumConfig> {
       throw new Error('Config file must export a default export or "config" named export');
     }
 
-    return config as QuorumConfig;
+    return config as QuorumUXConfig;
   } catch (error) {
     throw new Error(
       `Failed to load config from ${configPath}: ${error instanceof Error ? error.message : String(error)}`
@@ -332,7 +332,7 @@ async function loadConfig(configPath: string): Promise<QuorumConfig> {
 /**
  * Resolve run directory: use provided, auto-detect from config artifactsDir, or cwd
  */
-function resolveRunDir(runDir: string, config: QuorumConfig): string {
+function resolveRunDir(runDir: string, config: QuorumUXConfig): string {
   if (runDir && fs.existsSync(runDir)) {
     return path.resolve(runDir);
   }
@@ -375,17 +375,17 @@ function getPricingDisplay(modelId: string): string {
  */
 function printHelp(): void {
   console.log(`
-Quorum — Multi-Model UX Analysis Pipeline
+QuorumUX — Multi-Model UX Analysis Pipeline
 
 USAGE
-  npx quorum [command] [options]
+  npx quorumux [command] [options]
 
 COMMANDS
   init               Interactive project setup wizard
   run [options]       Run the analysis pipeline (default if no command given)
 
 OPTIONS (for run)
-  --config <path>    Path to quorum.config.ts (default: ./quorum.config.ts)
+  --config <path>    Path to quorumux.config.ts (default: ./quorumux.config.ts)
   --run-dir <path>   Specific run directory (auto-detects latest if omitted)
   --start-stage <n>  Stage to start from: 1, 2, 3, or 4 (default: 1)
   --skip-video       Skip Stage 2b video analysis
@@ -395,30 +395,30 @@ OPTIONS (for run)
 
 ENVIRONMENT
   OPENROUTER_API_KEY  API key for OpenRouter (preferred).
-                      Also reads from .env / .env.local or ~/.quorum/config.json.
+                      Also reads from .env / .env.local or ~/.quorumux/config.json.
 
 GETTING STARTED
   # Set up a new project interactively
-  npx quorum init
+  npx quorumux init
 
   # Preview what the pipeline will do and estimated cost
-  npx quorum --dry-run
+  npx quorumux --dry-run
 
   # Run full pipeline
-  npx quorum
+  npx quorumux
 
   # Start from Stage 3 (skip frame extraction and analysis)
-  npx quorum --start-stage 3
+  npx quorumux --start-stage 3
 
   # Run without video analysis
-  npx quorum --skip-video
+  npx quorumux --skip-video
 `);
 }
 
 /**
  * Print summary box with cost and timing
  */
-function printSummary(config: QuorumConfig, runDir: string, tracker: CostTracker, elapsed: string): void {
+function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTracker, elapsed: string): void {
   const reportsDir = path.join(runDir, 'reports');
   const uxReportPath = path.join(reportsDir, 'ux-analysis-report.md');
   const githubIssuesPath = path.join(reportsDir, 'github-issues.md');

@@ -1,5 +1,5 @@
 /**
- * Quorum — Cost Tracking & Estimation
+ * QuorumUX — Cost Tracking & Estimation
  *
  * Tracks actual token usage from OpenRouter responses, calculates costs
  * per stage, and provides dry-run estimates.

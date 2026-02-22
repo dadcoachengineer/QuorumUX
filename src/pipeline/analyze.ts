@@ -1,5 +1,5 @@
 /**
- * Quorum Pipeline Stage 2: Screenshot Analysis
+ * QuorumUX Pipeline Stage 2: Screenshot Analysis
  *
  * Sends screenshot grids to all models in config.models.screenshot via OpenRouter.
  * Models run in parallel per persona, matching the reference implementation.
@@ -7,7 +7,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumConfig, PersonaSummary, ScreenshotAnalysis } from '../types';
+import { QuorumUXConfig, PersonaSummary, ScreenshotAnalysis } from '../types';
 import { callOpenRouter, OpenRouterResponse } from '../models/openrouter';
 import * as logger from '../utils/logger';
 import { ensureDir, loadJson } from '../utils/files';
@@ -15,7 +15,7 @@ import { CostTracker } from '../utils/costs';
 import { getArchetypeById } from '../personas';
 
 export async function analyzeScreenshots(
-  config: QuorumConfig,
+  config: QuorumUXConfig,
   runDir: string,
   tracker?: CostTracker
 ): Promise<void> {
@@ -111,7 +111,7 @@ async function analyzeGridWithModel(
   gridPath: string,
   modelId: string,
   modelName: string,
-  config: QuorumConfig,
+  config: QuorumUXConfig,
   personaSummary: PersonaSummary | null,
   maxTokens?: number
 ): Promise<OpenRouterResponse> {
@@ -146,14 +146,14 @@ async function analyzeGridWithModel(
     ],
     maxTokens: maxTokens || 3000,
     referer: config.appUrl,
-    title: 'Quorum UX Analysis',
+    title: 'QuorumUX UX Analysis',
   });
 }
 
 /**
  * Build system prompt for screenshot analysis
  */
-function buildScreenshotSystemPrompt(config: QuorumConfig, personaSummary: PersonaSummary | null): string {
+function buildScreenshotSystemPrompt(config: QuorumUXConfig, personaSummary: PersonaSummary | null): string {
   const parts = [
     `You are an expert UX analyst reviewing test screenshots from ${config.name}, ${config.description}`,
     ``,
@@ -196,7 +196,7 @@ function buildScreenshotSystemPrompt(config: QuorumConfig, personaSummary: Perso
 /**
  * Build user message for screenshot analysis
  */
-function buildScreenshotUserMessage(config: QuorumConfig, personaSummary: PersonaSummary | null): string {
+function buildScreenshotUserMessage(config: QuorumUXConfig, personaSummary: PersonaSummary | null): string {
   const parts = [
     `Analyze the UX of${personaSummary ? ` persona "${personaSummary.persona}"` : ' this user'} based on the screenshot grid below.`,
     ``,

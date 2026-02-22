@@ -1,5 +1,5 @@
 /**
- * Quorum Pipeline Stage 3: Synthesis
+ * QuorumUX Pipeline Stage 3: Synthesis
  *
  * Cross-model synthesis integrating screenshot analyses, video analyses,
  * and test summaries into a coherent UX assessment via the synthesis model.
@@ -7,13 +7,13 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumConfig, Synthesis, ScreenshotAnalysis, VideoAnalysis, PersonaSummary } from '../types';
+import { QuorumUXConfig, Synthesis, ScreenshotAnalysis, VideoAnalysis, PersonaSummary } from '../types';
 import { callOpenRouter } from '../models/openrouter';
 import * as logger from '../utils/logger';
 import { loadJson, loadText } from '../utils/files';
 import { CostTracker } from '../utils/costs';
 
-export async function synthesize(config: QuorumConfig, runDir: string, tracker?: CostTracker): Promise<void> {
+export async function synthesize(config: QuorumUXConfig, runDir: string, tracker?: CostTracker): Promise<void> {
   logger.stage('Stage 3: Cross-Model Synthesis');
   tracker?.stageStart('Stage 3');
 
@@ -87,7 +87,7 @@ async function synthesizeWithModel(
   videoAnalyses: VideoAnalysis[],
   personaSummaries: PersonaSummary[],
   executiveSummary: string,
-  config: QuorumConfig,
+  config: QuorumUXConfig,
   tracker?: CostTracker
 ): Promise<Synthesis> {
   const systemPrompt = buildSynthesisSystemPrompt(config);
@@ -113,7 +113,7 @@ async function synthesizeWithModel(
     ],
     maxTokens: config.models.synthesis.maxTokens || 8000,
     referer: config.appUrl,
-    title: 'Quorum UX Analysis',
+    title: 'QuorumUX UX Analysis',
   });
 
   tracker?.record('Stage 3', config.models.synthesis.id, response.usage);
@@ -136,7 +136,7 @@ async function synthesizeWithModel(
 /**
  * Build system prompt for synthesis
  */
-function buildSynthesisSystemPrompt(config: QuorumConfig): string {
+function buildSynthesisSystemPrompt(config: QuorumUXConfig): string {
   const parts = [
     `You are a senior UX research analyst synthesizing findings from multiple models and data sources.`,
     ``,
@@ -170,7 +170,7 @@ function buildSynthesisUserMessage(
   videoAnalyses: VideoAnalysis[],
   personaSummaries: PersonaSummary[],
   executiveSummary: string,
-  config: QuorumConfig
+  config: QuorumUXConfig
 ): string {
   const successfulScreenshot = screenshotAnalyses.filter((a) => !a.error);
   const successfulVideo = videoAnalyses.filter((a) => !a.error);
