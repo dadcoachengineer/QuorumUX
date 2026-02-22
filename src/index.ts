@@ -47,6 +47,18 @@ async function main(): Promise<void> {
     return;
   }
 
+  if (subcommand === 'status') {
+    const { runStatus } = await import('./commands/status.js');
+    await runStatus();
+    return;
+  }
+
+  if (subcommand === 'compare') {
+    const { runCompare } = await import('./commands/compare.js');
+    await runCompare(args.slice(1));
+    return;
+  }
+
   // "run" is explicit but optional — strip it so parseArgs sees only flags
   const runArgs = subcommand === 'run' ? args.slice(1) : args;
   await runPipeline(runArgs);
@@ -126,13 +138,13 @@ async function runPipeline(args: string[]): Promise<void> {
 
     if (startStage <= 4) {
       tracker.stageStart('Stage 4');
-      await generateReport(config, runDir);
+      await generateReport(config, runDir, options.outputDir);
       tracker.stageEnd('Stage 4');
     }
 
     // Print summary
     const elapsed = ((Date.now() - pipelineStart) / 1000).toFixed(1);
-    printSummary(config, runDir, tracker, elapsed);
+    printSummary(config, runDir, tracker, elapsed, options.outputDir);
   } catch (error) {
     logger.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
@@ -265,7 +277,10 @@ function dryRun(config: QuorumUXConfig, runDir: string, options: PipelineOptions
   if (startStage <= 4) {
     logger.log('');
     logger.log(`  Stage 4: Report generation (no API calls)`);
-    logger.log(`    Output: ux-analysis-report.md + github-issues.md`);
+    logger.log(`    Output: ux-analysis-report.md + github-issues.md + ux-analysis-report.json`);
+    if (options.outputDir) {
+      logger.log(`    Output dir: ${options.outputDir}`);
+    }
   }
 
   logger.log('');
@@ -300,6 +315,8 @@ export function parseArgs(args: string[]): PipelineOptions & { help?: boolean } 
       options.verbose = true;
     } else if (arg === '--dry-run') {
       options.dryRun = true;
+    } else if (arg === '--output-dir') {
+      options.outputDir = args[++i];
     } else {
       throw new Error(`Unknown option: ${arg}. Run 'quorumux --help' for usage.`);
     }
@@ -392,6 +409,7 @@ function resolveRunDir(runDir: string, config: QuorumUXConfig): string {
       .reverse();
 
     if (runs.length > 0) {
+      logger.log(`Auto-detected run directory: ${runs[0]}`);
       return path.join(artifactsDir, runs[0]);
     }
   }
@@ -408,6 +426,7 @@ function resolveRunDir(runDir: string, config: QuorumUXConfig): string {
     throw new Error('No run directory found. Use --run-dir or set artifactsDir in config.');
   }
 
+  logger.log(`Auto-detected run directory: ${runDirs[0]}`);
   return path.join(cwd, runDirs[0]);
 }
 
@@ -427,17 +446,20 @@ USAGE
   npx quorumux [command] [options]
 
 COMMANDS
-  init               Interactive project setup wizard
-  run [options]       Run the analysis pipeline (default if no command given)
+  init                        Interactive project setup wizard
+  run [options]               Run the analysis pipeline (default if no command given)
+  status                      Show project config, API key, and latest run info
+  compare [--json] <baseline> <current>  Compare two runs side-by-side
 
 OPTIONS (for run)
-  --config <path>    Path to quorumux.config.ts (default: ./quorumux.config.ts)
-  --run-dir <path>   Specific run directory (auto-detects latest if omitted)
-  --start-stage <n>  Stage to start from: 1, 2, 3, or 4 (default: 1)
-  --skip-video       Skip Stage 2b video analysis
-  --dry-run          Show what would run without making API calls
-  --verbose          Verbose logging
-  --help             Show this help message
+  --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
+  --run-dir <path>     Specific run directory (auto-detects latest if omitted)
+  --start-stage <n>    Stage to start from: 1, 2, 3, or 4 (default: 1)
+  --skip-video         Skip Stage 2b video analysis
+  --dry-run            Show what would run without making API calls
+  --output-dir <path>  Write reports to this directory instead of {runDir}/reports/
+  --verbose            Verbose logging
+  --help               Show this help message
 
 ENVIRONMENT
   OPENROUTER_API_KEY  API key for OpenRouter (preferred).
@@ -458,16 +480,20 @@ GETTING STARTED
 
   # Run without video analysis
   npx quorumux --skip-video
+
+  # Compare two runs
+  npx quorumux compare ./test-artifacts/run-01 ./test-artifacts/run-02
 `);
 }
 
 /**
  * Print summary box with cost and timing
  */
-function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTracker, elapsed: string): void {
-  const reportsDir = path.join(runDir, 'reports');
+function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTracker, elapsed: string, outputDir?: string): void {
+  const reportsDir = outputDir || path.join(runDir, 'reports');
   const uxReportPath = path.join(reportsDir, 'ux-analysis-report.md');
   const githubIssuesPath = path.join(reportsDir, 'github-issues.md');
+  const jsonReportPath = path.join(reportsDir, 'ux-analysis-report.json');
 
   const lines = [
     'QUORUM PIPELINE COMPLETE',
@@ -479,6 +505,7 @@ function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTrack
     'Artifacts:',
     `  ${uxReportPath}`,
     `  ${githubIssuesPath}`,
+    `  ${jsonReportPath}`,
     ...tracker.formatSummary(),
   ];
 

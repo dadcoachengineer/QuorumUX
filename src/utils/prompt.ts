@@ -51,18 +51,26 @@ export function confirm(question: string, defaultYes = true): Promise<boolean> {
 /** Show numbered choices and return the selected value. */
 export function select<T extends string>(
   question: string,
-  choices: Array<{ label: string; value: T; description?: string }>
+  choices: Array<{ label: string; value: T; description?: string }>,
+  defaultIndex?: number
 ): Promise<T> {
   return new Promise((resolve) => {
     console.log(`\n${question}`);
     for (let i = 0; i < choices.length; i++) {
       const desc = choices[i].description ? ` — ${choices[i].description}` : '';
-      console.log(`  ${i + 1}) ${choices[i].label}${desc}`);
+      const marker = defaultIndex === i ? ' (default)' : '';
+      console.log(`  ${i + 1}) ${choices[i].label}${desc}${marker}`);
     }
 
+    const defaultHint = defaultIndex !== undefined ? ` [${defaultIndex + 1}]` : '';
     const promptFn = () => {
-      getRL().question(`\nChoice (1-${choices.length}): `, (answer) => {
-        const num = parseInt(answer.trim(), 10);
+      getRL().question(`\nChoice (1-${choices.length})${defaultHint}: `, (answer) => {
+        const trimmed = answer.trim();
+        if (trimmed === '' && defaultIndex !== undefined) {
+          resolve(choices[defaultIndex].value);
+          return;
+        }
+        const num = parseInt(trimmed, 10);
         if (num >= 1 && num <= choices.length) {
           resolve(choices[num - 1].value);
         } else {

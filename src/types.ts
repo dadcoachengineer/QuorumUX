@@ -203,6 +203,10 @@ export interface ConsensusIssue {
   temporalInsight: string | null;
   recommendation: string;
   effort: 'low' | 'medium' | 'high';
+  /** Issue source: "app" (real product issue) or "test-infra" (test automation problem) */
+  source?: 'app' | 'test-infra';
+  /** Ordinal display counter (replaces model-generated sequential IDs) */
+  index?: number;
 }
 
 export interface VideoOnlyIssue {
@@ -213,6 +217,8 @@ export interface VideoOnlyIssue {
   timestamp: string;
   persona: string;
   recommendation: string;
+  source?: 'app' | 'test-infra';
+  index?: number;
 }
 
 export interface ModelUniqueIssue {
@@ -223,6 +229,8 @@ export interface ModelUniqueIssue {
   description: string;
   recommendation: string;
   confidence: 'low' | 'medium' | 'high';
+  source?: 'app' | 'test-infra';
+  index?: number;
 }
 
 export interface Disagreement {
@@ -259,6 +267,48 @@ export interface GlobalConfig {
   projects?: Record<string, unknown>;
 }
 
+// ─── Report JSON Output ───────────────────────────────────────────────────────
+
+export interface ReportJSONIssue {
+  type: 'consensus' | 'video-only' | 'model-unique';
+  id: string;
+  title: string;
+  severity: 'P0' | 'P1' | 'P2';
+  description: string;
+  recommendation: string;
+  /** Only present for consensus issues */
+  category?: string;
+  effort?: 'low' | 'medium' | 'high';
+  evidence?: ConsensusIssue['evidence'];
+  temporalInsight?: string | null;
+  /** Only present for video-only issues */
+  timestamp?: string;
+  persona?: string;
+  /** Only present for model-unique issues */
+  reportedBy?: string;
+  confidence?: 'low' | 'medium' | 'high';
+  /** Issue source classification */
+  source?: 'app' | 'test-infra';
+  /** Ordinal display counter */
+  index?: number;
+}
+
+export interface ReportJSON {
+  runId: string;
+  generatedAt: string;
+  projectName: string;
+  score: number;
+  /** Adjusted score with test-infra issues discounted (undefined if no test-infra issues) */
+  adjustedScore?: number;
+  launchReadiness: 'ready' | 'ready-with-caveats' | 'not-ready';
+  issueCount: number;
+  issues: ReportJSONIssue[];
+  models: string[];
+  personas: string[];
+  topStrengths: string[];
+  criticalPath: string[];
+}
+
 // ─── CLI Options ─────────────────────────────────────────────────────────────
 
 export interface PipelineOptions {
@@ -282,4 +332,7 @@ export interface PipelineOptions {
 
   /** Dry run: show what would run without making API calls */
   dryRun?: boolean;
+
+  /** Override output directory for reports (default: {runDir}/reports/) */
+  outputDir?: string;
 }

@@ -13,14 +13,17 @@ import {
   VideoOnlyIssue,
   ModelUniqueIssue,
   Disagreement,
+  ReportJSON,
+  ReportJSONIssue,
 } from '../types.js';
+import { calculateAdjustedScore } from '../utils/scoring.js';
 
 /**
  * Generate UX analysis report and GitHub issue templates from synthesis data
  */
-export async function generateReport(config: QuorumUXConfig, runDir: string): Promise<void> {
-  const reportsDir = path.join(runDir, 'reports');
-  const synthesisPath = path.join(reportsDir, 'synthesis.json');
+export async function generateReport(config: QuorumUXConfig, runDir: string, outputDir?: string): Promise<void> {
+  const sourceReportsDir = path.join(runDir, 'reports');
+  const synthesisPath = path.join(sourceReportsDir, 'synthesis.json');
 
   if (!fs.existsSync(synthesisPath)) {
     throw new Error(`Synthesis file not found at ${synthesisPath}`);
@@ -29,13 +32,24 @@ export async function generateReport(config: QuorumUXConfig, runDir: string): Pr
   const synthesisJson = fs.readFileSync(synthesisPath, 'utf-8');
   const synthesis: Synthesis = JSON.parse(synthesisJson);
 
+  // Determine output directory
+  const targetDir = outputDir || sourceReportsDir;
+  if (outputDir) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
   // Generate human-readable report
   const uxReport = generateUXReport(config, synthesis);
-  fs.writeFileSync(path.join(reportsDir, 'ux-analysis-report.md'), uxReport);
+  fs.writeFileSync(path.join(targetDir, 'ux-analysis-report.md'), uxReport);
 
   // Generate GitHub issues markdown
   const githubIssues = generateGitHubIssues(config, synthesis);
-  fs.writeFileSync(path.join(reportsDir, 'github-issues.md'), githubIssues);
+  fs.writeFileSync(path.join(targetDir, 'github-issues.md'), githubIssues);
+
+  // Generate JSON sidecar
+  const runId = path.basename(runDir);
+  const jsonReport = generateReportJSON(config, synthesis, runId);
+  fs.writeFileSync(path.join(targetDir, 'ux-analysis-report.json'), JSON.stringify(jsonReport, null, 2) + '\n');
 }
 
 /**
@@ -64,7 +78,15 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
   lines.push('## Overall Assessment');
   lines.push('');
   const assessment = synthesis.overallAssessment;
-  lines.push(`**UX Score:** ${assessment.uxScore}/100`);
+  const score100 = assessment.uxScore;
+  const score10 = (score100 / 10).toFixed(1);
+  let scoreLine = `**UX Score:** ${score100}/100 (${score10}/10)`;
+  const adjusted = calculateAdjustedScore(synthesis);
+  if (adjusted !== undefined && adjusted !== score100) {
+    const adj10 = (adjusted / 10).toFixed(1);
+    scoreLine += ` | Adjusted: ${adjusted}/100 (${adj10}/10)`;
+  }
+  lines.push(scoreLine);
   lines.push(`**Launch Readiness:** ${assessment.launchReadiness.replace(/-/g, ' ').toUpperCase()}`);
   lines.push('');
 
@@ -86,14 +108,24 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
     lines.push('');
   }
 
-  // Consensus Issues by Severity
-  if (synthesis.consensusIssues.length > 0) {
+  // Partition issues into app vs test-infra
+  const appConsensus = synthesis.consensusIssues.filter((i) => (i.source ?? 'app') !== 'test-infra');
+  const appVideo = synthesis.videoOnlyIssues.filter((i) => (i.source ?? 'app') !== 'test-infra');
+  const appModelUnique = synthesis.modelUniqueIssues.filter((i) => (i.source ?? 'app') !== 'test-infra');
+  const testInfraIssues = [
+    ...synthesis.consensusIssues.filter((i) => i.source === 'test-infra'),
+    ...synthesis.videoOnlyIssues.filter((i) => i.source === 'test-infra'),
+    ...synthesis.modelUniqueIssues.filter((i) => i.source === 'test-infra'),
+  ];
+
+  // Consensus Issues by Severity (app only)
+  if (appConsensus.length > 0) {
     lines.push('## Consensus Issues');
     lines.push('');
     lines.push('Issues identified and confirmed across multiple analysis sources.');
     lines.push('');
 
-    const byServerity = groupBySeverity(synthesis.consensusIssues);
+    const byServerity = groupBySeverity(appConsensus);
 
     ['P0', 'P1', 'P2'].forEach((severity) => {
       const issues = byServerity[severity] || [];
@@ -133,14 +165,14 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
     });
   }
 
-  // Video-Only Issues
-  if (synthesis.videoOnlyIssues.length > 0) {
+  // Video-Only Issues (app only)
+  if (appVideo.length > 0) {
     lines.push('## Video-Only Issues');
     lines.push('');
     lines.push('Issues detected only in video analysis (temporal, motion, or interaction patterns).');
     lines.push('');
 
-    const byServerity = groupVideoIssuesBySeverity(synthesis.videoOnlyIssues);
+    const byServerity = groupVideoIssuesBySeverity(appVideo);
 
     ['P0', 'P1', 'P2'].forEach((severity) => {
       const issues = byServerity[severity] || [];
@@ -163,8 +195,8 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
     });
   }
 
-  // Model-Unique Issues
-  if (synthesis.modelUniqueIssues.length > 0) {
+  // Model-Unique Issues (app only)
+  if (appModelUnique.length > 0) {
     lines.push('## Model-Unique Issues');
     lines.push('');
     lines.push(
@@ -172,7 +204,7 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
     );
     lines.push('');
 
-    synthesis.modelUniqueIssues.forEach((issue) => {
+    appModelUnique.forEach((issue) => {
       lines.push(`### ${issue.title}`);
       lines.push('');
       lines.push(`**Reported By:** ${issue.reportedBy}`);
@@ -184,6 +216,25 @@ function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string 
       lines.push(`**Recommendation:** ${issue.recommendation}`);
       lines.push('');
     });
+  }
+
+  // Test Infrastructure Issues (separated section)
+  if (testInfraIssues.length > 0) {
+    lines.push('## Test Infrastructure Issues');
+    lines.push('');
+    lines.push(
+      `These ${testInfraIssues.length} issue(s) appear to be test automation problems, not product issues.`
+    );
+    lines.push('They are weighted at 0.25x in the adjusted score.');
+    lines.push('');
+
+    for (const issue of testInfraIssues) {
+      const desc = issue.description.length > 100
+        ? issue.description.substring(0, 100) + '...'
+        : issue.description;
+      lines.push(`- **[${issue.severity}] ${issue.title}** — ${desc}`);
+    }
+    lines.push('');
   }
 
   // Disagreements
@@ -356,4 +407,83 @@ function groupVideoIssuesBySeverity(
     groups[issue.severity].push(issue);
   });
   return groups;
+}
+
+/**
+ * Generate a flat JSON report for programmatic consumption
+ */
+function generateReportJSON(config: QuorumUXConfig, synthesis: Synthesis, runId: string): ReportJSON {
+  const issues: ReportJSONIssue[] = [];
+
+  for (const issue of synthesis.consensusIssues) {
+    issues.push({
+      type: 'consensus',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      category: issue.category,
+      effort: issue.effort,
+      evidence: issue.evidence,
+      temporalInsight: issue.temporalInsight,
+      source: issue.source,
+      index: issue.index,
+    });
+  }
+
+  for (const issue of synthesis.videoOnlyIssues) {
+    issues.push({
+      type: 'video-only',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      timestamp: issue.timestamp,
+      persona: issue.persona,
+      source: issue.source,
+      index: issue.index,
+    });
+  }
+
+  for (const issue of synthesis.modelUniqueIssues) {
+    issues.push({
+      type: 'model-unique',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      reportedBy: issue.reportedBy,
+      confidence: issue.confidence,
+      source: issue.source,
+      index: issue.index,
+    });
+  }
+
+  // Collect unique model and persona names from evidence
+  const models = new Set<string>();
+  for (const issue of synthesis.consensusIssues) {
+    for (const m of issue.evidence.screenshotModels) models.add(m);
+  }
+  const personas = new Set<string>();
+  for (const issue of synthesis.consensusIssues) {
+    for (const p of issue.evidence.affectedPersonas) personas.add(p);
+  }
+
+  return {
+    runId,
+    generatedAt: new Date().toISOString(),
+    projectName: config.name,
+    score: synthesis.overallAssessment.uxScore,
+    adjustedScore: calculateAdjustedScore(synthesis),
+    launchReadiness: synthesis.overallAssessment.launchReadiness,
+    issueCount: issues.length,
+    issues,
+    models: [...models].sort(),
+    personas: [...personas].sort(),
+    topStrengths: synthesis.overallAssessment.topStrengths,
+    criticalPath: synthesis.overallAssessment.criticalPath,
+  };
 }

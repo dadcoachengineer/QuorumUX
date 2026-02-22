@@ -7,11 +7,42 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { createHash } from 'node:crypto';
 import { QuorumUXConfig, Synthesis, ScreenshotAnalysis, VideoAnalysis, PersonaSummary } from '../types.js';
 import { callOpenRouter } from '../models/openrouter.js';
 import * as logger from '../utils/logger.js';
 import { loadJson, loadText } from '../utils/files.js';
 import { CostTracker } from '../utils/costs.js';
+
+/**
+ * Generate a stable content-based issue ID from title + discriminator.
+ * Deterministic: same inputs always produce the same QUX-xxxxxxxx hash.
+ */
+export function generateStableId(title: string, discriminator: string): string {
+  const normalized = `${title.toLowerCase().trim()}:${discriminator.toLowerCase().trim()}`;
+  return `QUX-${createHash('sha256').update(normalized).digest('hex').substring(0, 8)}`;
+}
+
+/**
+ * Post-process synthesis output: replace model-generated ordinal IDs
+ * with stable content-based hashes, preserving the ordinal as `index`.
+ */
+function stabilizeIds(synthesis: Synthesis): Synthesis {
+  let idx = 1;
+  for (const issue of synthesis.consensusIssues) {
+    issue.index = idx++;
+    issue.id = generateStableId(issue.title, issue.category || 'consensus');
+  }
+  for (const issue of synthesis.videoOnlyIssues) {
+    issue.index = idx++;
+    issue.id = generateStableId(issue.title, 'video');
+  }
+  for (const issue of synthesis.modelUniqueIssues) {
+    issue.index = idx++;
+    issue.id = generateStableId(issue.title, 'model-unique');
+  }
+  return synthesis;
+}
 
 export async function synthesize(config: QuorumUXConfig, runDir: string, tracker?: CostTracker): Promise<void> {
   logger.stage('Stage 3: Cross-Model Synthesis');
@@ -125,7 +156,8 @@ async function synthesizeWithModel(
   const jsonStr = (jsonMatch[1] || rawContent).trim();
 
   try {
-    return JSON.parse(jsonStr) as Synthesis;
+    const parsed = JSON.parse(jsonStr) as Synthesis;
+    return stabilizeIds(parsed);
   } catch (parseError) {
     logger.error(`Failed to parse synthesis response as JSON: ${parseError}`);
     logger.debug(`Raw response (first 500 chars): ${rawContent.substring(0, 500)}`);
@@ -265,10 +297,10 @@ function buildSynthesisUserMessage(
     `  },`,
     `  "consensusIssues": [`,
     `    {`,
-    `      "id": "ISSUE-001",`,
     `      "title": "Issue title",`,
     `      "severity": "P0|P1|P2",`,
     `      "category": "visual|functional|copy|accessibility|performance|interaction|layout",`,
+    `      "source": "app|test-infra",`,
     `      "description": "Detailed description",`,
     `      "evidence": {`,
     `        "screenshotModels": ["claude", "gemini"],`,
@@ -283,9 +315,9 @@ function buildSynthesisUserMessage(
     `  ],`,
     `  "videoOnlyIssues": [`,
     `    {`,
-    `      "id": "VIDEO-001",`,
     `      "title": "Issue title",`,
     `      "severity": "P0|P1|P2",`,
+    `      "source": "app|test-infra",`,
     `      "description": "Description",`,
     `      "timestamp": "MM:SS",`,
     `      "persona": "persona",`,
@@ -294,10 +326,10 @@ function buildSynthesisUserMessage(
     `  ],`,
     `  "modelUniqueIssues": [`,
     `    {`,
-    `      "id": "UNIQUE-001",`,
     `      "title": "Issue title",`,
     `      "reportedBy": "claude|gemini|gpt4o",`,
     `      "severity": "P0|P1|P2",`,
+    `      "source": "app|test-infra",`,
     `      "description": "Description",`,
     `      "recommendation": "Recommendation",`,
     `      "confidence": "low|medium|high"`,
@@ -326,6 +358,12 @@ function buildSynthesisUserMessage(
     `4. **Disagreements** = Models actively contradict each other`,
     `5. Prioritize P0 > P1 > P2 (P0 = ship blocker, P1 = first week, P2 = polish)`,
     `6. When video confirms screenshot finding, explicitly note the temporal insight`,
+    `7. **Source classification**: For each issue, classify as "app" or "test-infra":`,
+    `   - "test-infra" = problems in test automation, not the product:`,
+    `     screenshot/video capture artifacts, test environment issues (localhost URLs,`,
+    `     missing test data), automation timing (Playwright wait failures), cookie/auth`,
+    `     state not set up, placeholder/mock data visible`,
+    `   - "app" = real product issues visible to end users (default when uncertain)`,
   );
 
   return parts.join('\n');

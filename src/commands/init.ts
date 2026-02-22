@@ -10,6 +10,8 @@ import { ask, select, confirm, closePrompt } from '../utils/prompt.js';
 import { resolveApiKey, loadGlobalConfig, saveGlobalConfig } from '../config/global.js';
 import { ARCHETYPES, PERSONA_BUNDLES, getArchetypeSubset } from '../personas/index.js';
 import { ModelConfig } from '../types.js';
+import * as logger from '../utils/logger.js';
+import { findLatestRun } from '../utils/files.js';
 
 const DOMAINS = [
   { label: 'Career Tech', value: 'career-tech' },
@@ -82,7 +84,10 @@ export async function runInit(): Promise<void> {
     const appUrl = await ask('App URL (e.g. https://myapp.com)');
 
     // Step 3: User Journey
-    const userJourney = await ask('Describe the primary user flow to test');
+    const userJourney = await ask(
+      'Describe the critical user journey to evaluate.\n' +
+      '  Format as steps, e.g.: Sign up \u2192 complete onboarding \u2192 create first project \u2192 invite team\n'
+    );
 
     // Step 4: Personas
     const personaIds = await selectPersonas();
@@ -122,13 +127,35 @@ export async function runInit(): Promise<void> {
 
     fs.writeFileSync(configPath, configContent);
 
-    console.log('\n  Config written to quorumux.config.ts');
-    console.log(`  Selected ${personaIds.length} persona archetype(s): ${personaIds.join(', ')}`);
-    console.log(`  Testing depth: ${depth}`);
+    console.log('\n  Config written to quorumux.config.ts\n');
+
+    // Config preview (Item 4)
+    const depthLabel = TESTING_DEPTHS.find((d) => d.value === depth)!.label;
+    logger.box([
+      `Project: ${name}`,
+      `Domain: ${domain}`,
+      `URL: ${appUrl}`,
+      `Personas: ${personaIds.length}`,
+      `Depth: ${depthLabel}`,
+      `Screenshot models: ${models.screenshot.map((m) => m.name).join(', ')}`,
+      `Video model: ${models.video.name}`,
+      `Synthesis model: ${models.synthesis.name}`,
+      `Artifacts dir: ${artifactsDir}`,
+    ]);
+
+    // Contextual next steps (Item 3)
+    const latestRun = findLatestRun(path.resolve(artifactsDir));
     console.log(`\n  Next steps:`);
-    console.log(`    1. Place test artifacts in ${artifactsDir}/`);
-    console.log(`    2. Run: npx quorumux --dry-run`);
-    console.log(`    3. Run: npx quorumux\n`);
+    let step = 1;
+    if (latestRun) {
+      console.log(`    Found existing run: ${path.basename(latestRun)}`);
+    } else {
+      console.log(`    ${step}. Place test artifacts in ${artifactsDir}/`);
+      step++;
+    }
+    console.log(`    ${step}. Run: quorumux --dry-run`);
+    step++;
+    console.log(`    ${step}. Run: quorumux\n`);
   } finally {
     closePrompt();
   }
@@ -152,16 +179,16 @@ async function resolveApiKeyStep(): Promise<string> {
 
   const saveChoice = await select('Where should the key be stored?', [
     {
+      label: 'Environment variable (recommended)',
+      value: 'env' as const,
+      description: 'More secure, add to your shell profile',
+    },
+    {
       label: 'Global config (~/.quorumux/config.json)',
       value: 'global' as const,
       description: 'Convenient but stored in plaintext',
     },
-    {
-      label: 'Show env var command (recommended)',
-      value: 'env' as const,
-      description: 'More secure, add to your shell profile',
-    },
-  ]);
+  ], 0);
 
   if (saveChoice === 'global') {
     const config = loadGlobalConfig();

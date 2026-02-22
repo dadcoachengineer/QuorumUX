@@ -25,7 +25,7 @@ Stage 1: extract-frames.ts   → ffmpeg + ImageMagick (no API calls)
 Stage 2: analyze.ts          → 3 screenshot models in parallel (per persona × per model)
 Stage 2b: analyze-video.ts   → Gemini video analysis in parallel with Stage 2
 Stage 3: synthesize.ts       → Opus synthesizes all Stage 2/2b output
-Stage 4: report.ts           → Templating only (no API calls)
+Stage 4: report.ts           → Templating only (no API calls), outputs .md + .json
 ```
 
 Stages 2 + 2b run via `Promise.all()` in `index.ts`. Within Stage 2, all persona × model combinations also run in parallel.
@@ -37,7 +37,9 @@ src/
 ├── index.ts                 # CLI entry, arg parsing, pipeline orchestration
 ├── types.ts                 # All shared types (QuorumUXConfig, Synthesis, etc.)
 ├── commands/
-│   └── init.ts              # `quorumux init` interactive wizard
+│   ├── init.ts              # `quorumux init` interactive wizard
+│   ├── status.ts            # `quorumux status` project diagnostic
+│   └── compare.ts           # `quorumux compare` run diff
 ├── config/
 │   └── global.ts            # ~/.quorumux/config.json management, API key resolution
 ├── models/
@@ -50,7 +52,7 @@ src/
 │   ├── analyze.ts           # Stage 2: screenshot analysis (multi-model)
 │   ├── analyze-video.ts     # Stage 2b: video temporal analysis
 │   ├── synthesize.ts        # Stage 3: cross-model synthesis
-│   └── report.ts            # Stage 4: markdown report generation
+│   └── report.ts            # Stage 4: markdown + JSON report generation
 └── utils/
     ├── costs.ts             # MODEL_PRICING map, CostTracker class
     ├── files.ts             # File system helpers
@@ -95,11 +97,11 @@ Importing the package for types does **not** trigger the CLI — `index.ts` has 
 - **npm package**: `quorum-ux` (hyphenated, for npm).
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
-- **Published on npm** as `quorum-ux@0.1.1`.
-- **Test suite**: vitest, 72 unit tests across 6 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
+- **Published on npm** as `quorum-ux@0.2.0`.
+- **Test suite**: vitest, 80 unit tests across 7 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, `compareSyntheses`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
 - **Module system**: tsconfig uses `module: "NodeNext"` / `moduleResolution: "NodeNext"`. All relative imports in `.ts` source must use `.js` extensions (e.g., `from './types.js'`). TS resolves them to `.ts` at compile time but emits them as-is for Node ESM.
 - **CI**: GitHub Actions runs on push to `main` and PRs — test (Node 18/20/22 matrix), typecheck, and build (with dist test-file leak check).
-- **Stage outputs** go in `{runDir}/reports/` — not the project root.
+- **Stage outputs** go in `{runDir}/reports/` — not the project root. Override with `--output-dir`.
 
 ## Gotchas
 
