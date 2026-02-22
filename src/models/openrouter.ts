@@ -8,7 +8,7 @@
 /**
  * Redact OpenRouter API keys from error text to prevent leaking secrets in logs.
  */
-function redactApiKey(text: string): string {
+export function redactApiKey(text: string): string {
   return text.replace(/sk-or-v1-[a-zA-Z0-9]+/g, 'sk-or-***').replace(/sk-or-[a-zA-Z0-9]+/g, 'sk-or-***');
 }
 
