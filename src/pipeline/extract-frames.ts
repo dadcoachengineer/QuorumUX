@@ -12,7 +12,33 @@ import { QuorumUXConfig } from '../types';
 import * as logger from '../utils/logger';
 import { ensureDir } from '../utils/files';
 
+/**
+ * Verify that ffmpeg and ImageMagick montage are installed before running Stage 1.
+ */
+function checkRequiredTools(): void {
+  const missing: string[] = [];
+
+  try {
+    execSync('which ffmpeg', { stdio: 'pipe' });
+  } catch {
+    missing.push('ffmpeg — install with: brew install ffmpeg');
+  }
+
+  try {
+    execSync('which montage', { stdio: 'pipe' });
+  } catch {
+    missing.push('montage (ImageMagick) — install with: brew install imagemagick');
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required tools for Stage 1:\n  ${missing.join('\n  ')}`
+    );
+  }
+}
+
 export async function extractFrames(config: QuorumUXConfig, runDir: string): Promise<void> {
+  checkRequiredTools();
   logger.stage('Stage 1: Frame Extraction & Grid Generation');
 
   const framesDir = path.join(runDir, 'frames');

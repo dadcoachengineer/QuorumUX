@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * QuorumUX CLI — Entry Point
  *
@@ -17,6 +18,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { QuorumUXConfig, PipelineOptions } from './types';
+
+// Public type re-exports for consumers of the npm package
+export type { QuorumUXConfig, ModelConfig, ModelSpec, VideoConfig, PersonaArchetype } from './types';
 import * as logger from './utils/logger';
 import { CostTracker, getPricing } from './utils/costs';
 import { resolveApiKey } from './config/global';
@@ -321,11 +325,52 @@ async function loadConfig(configPath: string): Promise<QuorumUXConfig> {
       throw new Error('Config file must export a default export or "config" named export');
     }
 
+    validateConfig(config);
     return config as QuorumUXConfig;
   } catch (error) {
     throw new Error(
       `Failed to load config from ${configPath}: ${error instanceof Error ? error.message : String(error)}`
     );
+  }
+}
+
+/**
+ * Validate config has all required fields. Throws with all errors at once.
+ */
+function validateConfig(config: any): void {
+  const errors: string[] = [];
+
+  for (const field of ['name', 'description', 'domain', 'appUrl', 'userJourney', 'artifactsDir'] as const) {
+    if (typeof config[field] !== 'string' || config[field].trim() === '') {
+      errors.push(`"${field}" must be a non-empty string`);
+    }
+  }
+
+  if (!config.models) {
+    errors.push('"models" is required');
+  } else {
+    if (!Array.isArray(config.models.screenshot) || config.models.screenshot.length === 0) {
+      errors.push('"models.screenshot" must be an array with at least 1 entry');
+    } else {
+      for (let i = 0; i < config.models.screenshot.length; i++) {
+        const m = config.models.screenshot[i];
+        if (!m?.id || !m?.name) {
+          errors.push(`"models.screenshot[${i}]" must have "id" and "name"`);
+        }
+      }
+    }
+
+    if (!config.models.video?.id || !config.models.video?.name) {
+      errors.push('"models.video" must have "id" and "name"');
+    }
+
+    if (!config.models.synthesis?.id || !config.models.synthesis?.name) {
+      errors.push('"models.synthesis" must have "id" and "name"');
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Invalid quorumux.config.ts:\n  - ${errors.join('\n  - ')}`);
   }
 }
 
@@ -439,5 +484,8 @@ function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTrack
   logger.box(lines);
 }
 
-// Run main
-main();
+// Only run CLI when executed directly (not when imported for types)
+const isDirectRun = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'));
+if (isDirectRun) {
+  main();
+}
