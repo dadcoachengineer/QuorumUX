@@ -1,6 +1,11 @@
 /**
  * Quorum CLI — Entry Point
  *
+ * Subcommands:
+ *   init        Interactive project setup wizard
+ *   run [opts]  Run the analysis pipeline (default)
+ *   --help      Show help
+ *
  * Orchestrates the 4-stage UX analysis pipeline:
  * Stage 1: Extract frames and generate grids from videos
  * Stage 2: Analyze screenshots with multiple AI models
@@ -14,6 +19,7 @@ import * as path from 'path';
 import { QuorumConfig, PipelineOptions } from './types';
 import * as logger from './utils/logger';
 import { CostTracker, getPricing } from './utils/costs';
+import { resolveApiKey } from './config/global';
 
 // Import stage implementations
 import { extractFrames } from './pipeline/extract-frames';
@@ -23,11 +29,30 @@ import { synthesize } from './pipeline/synthesize';
 import { generateReport } from './pipeline/report';
 
 /**
- * Main CLI entry point
+ * Main CLI entry point — detect subcommand then dispatch
  */
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
+  const subcommand = args[0];
+
+  // Handle subcommands
+  if (subcommand === 'init') {
+    const { runInit } = await import('./commands/init');
+    await runInit();
+    return;
+  }
+
+  // "run" is explicit but optional — strip it so parseArgs sees only flags
+  const runArgs = subcommand === 'run' ? args.slice(1) : args;
+  await runPipeline(runArgs);
+}
+
+/**
+ * Run the analysis pipeline (original behavior)
+ */
+async function runPipeline(args: string[]): Promise<void> {
   try {
-    const options = parseArgs();
+    const options = parseArgs(args);
 
     if (options.help) {
       printHelp();
@@ -52,9 +77,13 @@ async function main(): Promise<void> {
       return;
     }
 
-    // Validate API key (not needed for dry run)
-    if (!process.env.OPENROUTER_API_KEY) {
-      logger.error('OPENROUTER_API_KEY environment variable not set');
+    // Validate API key using resolution chain
+    const apiKey = resolveApiKey();
+    if (!apiKey) {
+      logger.error(
+        'No OpenRouter API key found.\n' +
+          '  Set OPENROUTER_API_KEY env var, add it to .env, or run `quorum init` to configure.'
+      );
       process.exit(1);
     }
 
@@ -241,8 +270,7 @@ function dryRun(config: QuorumConfig, runDir: string, options: PipelineOptions):
 /**
  * Parse command-line arguments
  */
-function parseArgs(): PipelineOptions & { help?: boolean } {
-  const args = process.argv.slice(2);
+function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
   const options: any = {
     config: './quorum.config.ts',
   };
@@ -268,7 +296,7 @@ function parseArgs(): PipelineOptions & { help?: boolean } {
     } else if (arg === '--dry-run') {
       options.dryRun = true;
     } else {
-      throw new Error(`Unknown option: ${arg}`);
+      throw new Error(`Unknown option: ${arg}. Run 'quorum --help' for usage.`);
     }
   }
 
@@ -282,7 +310,7 @@ async function loadConfig(configPath: string): Promise<QuorumConfig> {
   const absolutePath = path.resolve(configPath);
 
   if (!fs.existsSync(absolutePath)) {
-    throw new Error(`Config file not found: ${absolutePath}`);
+    throw new Error(`Config file not found: ${absolutePath}\n  Run 'quorum init' to create one.`);
   }
 
   try {
@@ -350,9 +378,13 @@ function printHelp(): void {
 Quorum — Multi-Model UX Analysis Pipeline
 
 USAGE
-  npx quorum [options]
+  npx quorum [command] [options]
 
-OPTIONS
+COMMANDS
+  init               Interactive project setup wizard
+  run [options]       Run the analysis pipeline (default if no command given)
+
+OPTIONS (for run)
   --config <path>    Path to quorum.config.ts (default: ./quorum.config.ts)
   --run-dir <path>   Specific run directory (auto-detects latest if omitted)
   --start-stage <n>  Stage to start from: 1, 2, 3, or 4 (default: 1)
@@ -362,17 +394,18 @@ OPTIONS
   --help             Show this help message
 
 ENVIRONMENT
-  OPENROUTER_API_KEY Required for running the pipeline (not needed for --dry-run).
+  OPENROUTER_API_KEY  API key for OpenRouter (preferred).
+                      Also reads from .env / .env.local or ~/.quorum/config.json.
 
-EXAMPLES
+GETTING STARTED
+  # Set up a new project interactively
+  npx quorum init
+
   # Preview what the pipeline will do and estimated cost
   npx quorum --dry-run
 
   # Run full pipeline
   npx quorum
-
-  # Run with specific config and run directory
-  npx quorum --config ./my-config.ts --run-dir ./run-2025-02-22
 
   # Start from Stage 3 (skip frame extraction and analysis)
   npx quorum --start-stage 3

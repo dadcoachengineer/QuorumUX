@@ -36,6 +36,9 @@ export interface QuorumConfig {
 
   /** Optional: video analysis settings */
   video?: VideoConfig;
+
+  /** Optional: persona archetype IDs selected for this project */
+  personas?: string[];
 }
 
 export interface ModelConfig {
@@ -234,6 +237,26 @@ export interface OverallAssessment {
   topStrengths: string[];
   criticalPath: string[];
   temporalInsightsSummary: string;
+}
+
+// ─── Persona Archetypes ─────────────────────────────────────────────────────
+
+export interface PersonaArchetype {
+  id: string;
+  name: string;
+  description: string;
+  device: 'desktop' | 'mobile' | 'tablet';
+  viewport: { width: number; height: number };
+  behaviorNotes: string;
+  accessibilityNeeds?: string[];
+}
+
+// ─── Global Config (~/.quorum/config.json) ──────────────────────────────────
+
+export interface GlobalConfig {
+  apiKey?: string;
+  defaultModels?: ModelConfig;
+  projects?: Record<string, unknown>;
 }
 
 // ─── CLI Options ─────────────────────────────────────────────────────────────

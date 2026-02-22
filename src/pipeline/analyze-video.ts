@@ -12,6 +12,7 @@ import { callOpenRouter } from '../models/openrouter';
 import * as logger from '../utils/logger';
 import { ensureDir, loadJson } from '../utils/files';
 import { CostTracker } from '../utils/costs';
+import { getArchetypeById } from '../personas';
 
 export async function analyzeVideos(
   config: QuorumConfig,
@@ -70,7 +71,7 @@ export async function analyzeVideos(
     const personaSummary = loadJson<any>(summaryPath);
 
     try {
-      const response = await analyzeVideoWithModel(videoPath, config, personaSummary);
+      const response = await analyzeVideoWithModel(videoPath, config, personaSummary, personaId);
 
       tracker?.record('Stage 2b', config.models.video.id, response.usage);
 
@@ -126,13 +127,14 @@ export async function analyzeVideos(
 async function analyzeVideoWithModel(
   videoPath: string,
   config: QuorumConfig,
-  personaSummary: any | null
+  personaSummary: any | null,
+  personaId?: string
 ) {
   const videoBuffer = fs.readFileSync(videoPath);
   const videoBase64 = videoBuffer.toString('base64');
   const mimeType = videoPath.endsWith('.webm') ? 'video/webm' : 'video/mp4';
 
-  const systemPrompt = buildVideoSystemPrompt(config);
+  const systemPrompt = buildVideoSystemPrompt(config, personaId);
   const summaryContext = personaSummary
     ? `Pass: ${personaSummary.results?.pass}, Friction: ${personaSummary.results?.friction}, Fail: ${personaSummary.results?.fail}`
     : '';
@@ -170,7 +172,7 @@ async function analyzeVideoWithModel(
 /**
  * Build system prompt for video analysis
  */
-function buildVideoSystemPrompt(config: QuorumConfig): string {
+function buildVideoSystemPrompt(config: QuorumConfig, personaId?: string): string {
   const parts = [
     `You are an expert UX analyst specializing in behavioral analysis from screen recordings.`,
     `You are reviewing recordings from ${config.name}, ${config.description}`,
@@ -180,6 +182,21 @@ function buildVideoSystemPrompt(config: QuorumConfig): string {
     `Focus on TEMPORAL signals that static screenshots cannot capture: hesitation, flow sequence,`,
     `interaction timing, loading delays, confusion patterns, and engagement depth.`,
   ];
+
+  // Inject archetype behavior notes if this persona matches a known archetype
+  if (personaId) {
+    const archetype = getArchetypeById(personaId);
+    if (archetype) {
+      parts.push(
+        ``,
+        `**Archetype: ${archetype.name}**`,
+        archetype.behaviorNotes
+      );
+      if (archetype.accessibilityNeeds?.length) {
+        parts.push(`Accessibility needs: ${archetype.accessibilityNeeds.join(', ')}`);
+      }
+    }
+  }
 
   if (config.synthesisContext) {
     parts.push('', config.synthesisContext);
