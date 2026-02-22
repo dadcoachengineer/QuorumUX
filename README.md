@@ -106,8 +106,10 @@ Naming conventions are flexible — QuorumUX discovers personas from subdirector
 npx quorumux [command] [options]
 
 Commands:
-  init               Interactive project setup wizard
-  run [options]       Run the analysis pipeline (default)
+  init                          Interactive project setup wizard
+  run [options]                 Run the analysis pipeline (default)
+  status                        Show project config, API key, and latest run info
+  compare <baseline> <current>  Compare two runs side-by-side
 
 Options:
   --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
@@ -115,6 +117,7 @@ Options:
   --start-stage <n>    Start from stage 1, 2, 3, or 4 (default: 1)
   --skip-video         Skip Stage 2b video analysis
   --dry-run            Show what would run without making API calls
+  --output-dir <path>  Write reports to this directory instead of {runDir}/reports/
   --verbose            Verbose output
   --help               Show help
 
@@ -131,7 +134,7 @@ Environment:
 | **2: Analyze Screenshots** | grids/, summaries/ | all-analyses-raw.json | All `config.models.screenshot` |
 | **2b: Analyze Video** | videos/, summaries/ | all-video-analyses-raw.json | `config.models.video` |
 | **3: Synthesize** | All Stage 2/2b output + summaries + exec summary | synthesis.json | `config.models.synthesis` |
-| **4: Report** | synthesis.json | ux-analysis-report.md, github-issues.md | None (templating) |
+| **4: Report** | synthesis.json | ux-analysis-report.md, github-issues.md, ux-analysis-report.json | None (templating) |
 
 Stages 2 and 2b run in parallel. You can start from any stage with `--start-stage`.
 
@@ -167,6 +170,10 @@ When persona IDs match an archetype, QuorumUX automatically injects behavioral c
 ### github-issues.md
 
 Ready-to-paste `gh issue create` commands for every finding, with severity labels and structured descriptions.
+
+### ux-analysis-report.json
+
+Flat JSON with all issues (consensus, video-only, model-unique) in a single array with `type` discriminator. Includes score, launch readiness, models, personas, strengths, and critical path. Designed for CI integration and dashboards.
 
 ### synthesis.json
 
