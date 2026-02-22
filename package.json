@@ -4,7 +4,7 @@
   "description": "Multi-model consensus UX analysis from E2E test artifacts",
   "type": "module",
   "bin": {
-    "quorumux": "./dist/index.js"
+    "quorumux": "dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/types.d.ts",
@@ -50,7 +50,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dadcoachengineer/QuorumUX"
+    "url": "git+https://github.com/dadcoachengineer/QuorumUX.git"
   },
   "engines": {
     "node": ">=18"
