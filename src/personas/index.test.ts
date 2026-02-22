@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getArchetypeById, getArchetypeSubset, PERSONA_BUNDLES, ARCHETYPES } from './index';
+import { getArchetypeById, getArchetypeSubset, PERSONA_BUNDLES, ARCHETYPES } from './index.js';
 
 describe('getArchetypeById', () => {
   it('finds an existing archetype', () => {

@@ -6,10 +6,10 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ask, select, confirm, closePrompt } from '../utils/prompt';
-import { resolveApiKey, loadGlobalConfig, saveGlobalConfig } from '../config/global';
-import { ARCHETYPES, PERSONA_BUNDLES, getArchetypeSubset } from '../personas';
-import { ModelConfig } from '../types';
+import { ask, select, confirm, closePrompt } from '../utils/prompt.js';
+import { resolveApiKey, loadGlobalConfig, saveGlobalConfig } from '../config/global.js';
+import { ARCHETYPES, PERSONA_BUNDLES, getArchetypeSubset } from '../personas/index.js';
+import { ModelConfig } from '../types.js';
 
 const DOMAINS = [
   { label: 'Career Tech', value: 'career-tech' },

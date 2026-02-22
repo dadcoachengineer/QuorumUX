@@ -18,20 +18,20 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'node:url';
-import { QuorumUXConfig, PipelineOptions } from './types';
+import { QuorumUXConfig, PipelineOptions } from './types.js';
 
 // Public type re-exports for consumers of the npm package
-export type { QuorumUXConfig, ModelConfig, ModelSpec, VideoConfig, PersonaArchetype } from './types';
-import * as logger from './utils/logger';
-import { CostTracker, getPricing } from './utils/costs';
-import { resolveApiKey } from './config/global';
+export type { QuorumUXConfig, ModelConfig, ModelSpec, VideoConfig, PersonaArchetype } from './types.js';
+import * as logger from './utils/logger.js';
+import { CostTracker, getPricing } from './utils/costs.js';
+import { resolveApiKey } from './config/global.js';
 
 // Import stage implementations
-import { extractFrames } from './pipeline/extract-frames';
-import { analyzeScreenshots } from './pipeline/analyze';
-import { analyzeVideos } from './pipeline/analyze-video';
-import { synthesize } from './pipeline/synthesize';
-import { generateReport } from './pipeline/report';
+import { extractFrames } from './pipeline/extract-frames.js';
+import { analyzeScreenshots } from './pipeline/analyze.js';
+import { analyzeVideos } from './pipeline/analyze-video.js';
+import { synthesize } from './pipeline/synthesize.js';
+import { generateReport } from './pipeline/report.js';
 
 /**
  * Main CLI entry point — detect subcommand then dispatch
@@ -42,7 +42,7 @@ async function main(): Promise<void> {
 
   // Handle subcommands
   if (subcommand === 'init') {
-    const { runInit } = await import('./commands/init');
+    const { runInit } = await import('./commands/init.js');
     await runInit();
     return;
   }

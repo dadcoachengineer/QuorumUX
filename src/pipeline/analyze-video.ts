@@ -7,12 +7,12 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumUXConfig, VideoAnalysis } from '../types';
-import { callOpenRouter } from '../models/openrouter';
-import * as logger from '../utils/logger';
-import { ensureDir, loadJson } from '../utils/files';
-import { CostTracker } from '../utils/costs';
-import { getArchetypeById } from '../personas';
+import { QuorumUXConfig, VideoAnalysis } from '../types.js';
+import { callOpenRouter } from '../models/openrouter.js';
+import * as logger from '../utils/logger.js';
+import { ensureDir, loadJson } from '../utils/files.js';
+import { CostTracker } from '../utils/costs.js';
+import { getArchetypeById } from '../personas/index.js';
 
 export async function analyzeVideos(
   config: QuorumUXConfig,

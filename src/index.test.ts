@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseArgs, validateConfig } from './index';
+import { parseArgs, validateConfig } from './index.js';
 
 // ─── parseArgs ──────────────────────────────────────────────────────────────
 

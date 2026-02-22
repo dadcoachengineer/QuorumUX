@@ -13,7 +13,7 @@ import {
   VideoOnlyIssue,
   ModelUniqueIssue,
   Disagreement,
-} from '../types';
+} from '../types.js';
 
 /**
  * Generate UX analysis report and GitHub issue templates from synthesis data

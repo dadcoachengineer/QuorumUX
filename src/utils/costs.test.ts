@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MODEL_PRICING, getPricing, CostTracker } from './costs';
+import { MODEL_PRICING, getPricing, CostTracker } from './costs.js';
 
 describe('MODEL_PRICING', () => {
   it('has all 4 known models', () => {

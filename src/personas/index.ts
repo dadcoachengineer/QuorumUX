@@ -1,7 +1,7 @@
-import { PersonaArchetype } from '../types';
-import { ARCHETYPES } from './archetypes';
+import { PersonaArchetype } from '../types.js';
+import { ARCHETYPES } from './archetypes.js';
 
-export { ARCHETYPES } from './archetypes';
+export { ARCHETYPES } from './archetypes.js';
 
 /** Get all 10 archetypes */
 export function getArchetypes(): PersonaArchetype[] {

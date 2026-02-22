@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { redactApiKey } from './openrouter';
+import { redactApiKey } from './openrouter.js';
 
 describe('redactApiKey', () => {
   it('redacts sk-or-v1-* keys', () => {

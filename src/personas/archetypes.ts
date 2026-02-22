@@ -1,4 +1,4 @@
-import { PersonaArchetype } from '../types';
+import { PersonaArchetype } from '../types.js';
 
 /**
  * 10 Universal Persona Archetypes for UX Testing
