@@ -65,10 +65,15 @@ src/
 - **Config is `quorumux.config.ts`** — loaded via dynamic `import()` in `index.ts`.
 - **API key resolution chain**: env var `OPENROUTER_API_KEY` → `.env`/`.env.local` → `~/.quorumux/config.json`. See `resolveApiKey()` in `config/global.ts`.
 - **CostTracker** is optional — passed to pipeline stages for tracking but stages work without it.
+- **Config validation** runs in `loadConfig()` — checks all required fields and reports every error at once (not one at a time).
+- **API key redaction** — `redactApiKey()` in `openrouter.ts` strips `sk-or-*` patterns from error messages before they reach logs.
+- **Tool checks** — `extractFrames()` verifies `ffmpeg` and `montage` exist before running Stage 1, with install instructions if missing.
 
 ### Type Exports
 
-The public type is `QuorumUXConfig` (exported from `src/types.ts`). The npm package exports it from `quorum-ux` and `quorum-ux/types`.
+Public types are re-exported from `src/index.ts`: `QuorumUXConfig`, `ModelConfig`, `ModelSpec`, `VideoConfig`, `PersonaArchetype`. The npm package exports them from both `quorum-ux` (via `dist/index.d.ts`) and `quorum-ux/types` (via `dist/types.d.ts`).
+
+Importing the package for types does **not** trigger the CLI — `index.ts` has a `main()` guard using `fileURLToPath` + `realpathSync` that only runs when executed directly (handles npm bin symlinks).
 
 ### Persona Archetypes
 
@@ -88,7 +93,8 @@ The public type is `QuorumUXConfig` (exported from `src/types.ts`). The npm pack
 - **npm package**: `quorum-ux` (hyphenated, for npm).
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
-- **No test suite yet** — pipeline has been validated end-to-end against MomentumEQ test artifacts.
+- **Published on npm** as `quorum-ux@0.1.0`.
+- **No test suite yet** — pipeline has been validated end-to-end (Stages 1-4) with live API calls against MomentumEQ test artifacts (48 API calls, $2.07, zero errors).
 - **Stage outputs** go in `{runDir}/reports/` — not the project root.
 
 ## Gotchas

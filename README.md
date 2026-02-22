@@ -1,5 +1,7 @@
 # QuorumUX
 
+[![npm version](https://img.shields.io/npm/v/quorum-ux)](https://www.npmjs.com/package/quorum-ux)
+
 **Multi-model consensus UX analysis from E2E test artifacts.**
 
 QuorumUX sends your Playwright screenshots and video recordings to multiple AI vision models, then synthesizes their findings into a single prioritized report with consensus-weighted severity. Issues flagged by 2+ models are high confidence. Video analysis catches temporal friction (hesitation, confusion, loading delays) that screenshots miss.
