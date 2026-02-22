@@ -6,9 +6,11 @@ Quorum sends your Playwright screenshots and video recordings to multiple AI vis
 
 ## How It Works
 
-<p align="center">
-  <img src="docs/pipeline.svg" alt="Quorum Pipeline Diagram" width="800">
-</p>
+<div align="center">
+
+![Quorum Pipeline Diagram](docs/pipeline.svg)
+
+</div>
 
 ## What Makes This Different
 
