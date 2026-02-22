@@ -39,6 +39,10 @@ describe('parseArgs', () => {
     expect(parseArgs(['--run-dir', '/tmp/run']).runDir).toBe('/tmp/run');
   });
 
+  it('parses --output-dir', () => {
+    expect(parseArgs(['--output-dir', '/tmp/out']).outputDir).toBe('/tmp/out');
+  });
+
   it('parses --start-stage 1', () => {
     expect(parseArgs(['--start-stage', '1']).startStage).toBe(1);
   });
