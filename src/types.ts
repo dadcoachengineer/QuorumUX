@@ -203,6 +203,10 @@ export interface ConsensusIssue {
   temporalInsight: string | null;
   recommendation: string;
   effort: 'low' | 'medium' | 'high';
+  /** Issue source: "app" (real product issue) or "test-infra" (test automation problem) */
+  source?: 'app' | 'test-infra';
+  /** Ordinal display counter (replaces model-generated sequential IDs) */
+  index?: number;
 }
 
 export interface VideoOnlyIssue {
@@ -213,6 +217,8 @@ export interface VideoOnlyIssue {
   timestamp: string;
   persona: string;
   recommendation: string;
+  source?: 'app' | 'test-infra';
+  index?: number;
 }
 
 export interface ModelUniqueIssue {
@@ -223,6 +229,8 @@ export interface ModelUniqueIssue {
   description: string;
   recommendation: string;
   confidence: 'low' | 'medium' | 'high';
+  source?: 'app' | 'test-infra';
+  index?: number;
 }
 
 export interface Disagreement {
@@ -279,6 +287,10 @@ export interface ReportJSONIssue {
   /** Only present for model-unique issues */
   reportedBy?: string;
   confidence?: 'low' | 'medium' | 'high';
+  /** Issue source classification */
+  source?: 'app' | 'test-infra';
+  /** Ordinal display counter */
+  index?: number;
 }
 
 export interface ReportJSON {
@@ -286,6 +298,8 @@ export interface ReportJSON {
   generatedAt: string;
   projectName: string;
   score: number;
+  /** Adjusted score with test-infra issues discounted (undefined if no test-infra issues) */
+  adjustedScore?: number;
   launchReadiness: 'ready' | 'ready-with-caveats' | 'not-ready';
   issueCount: number;
   issues: ReportJSONIssue[];

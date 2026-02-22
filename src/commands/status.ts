@@ -79,7 +79,9 @@ export async function runStatus(): Promise<void> {
         const synthesisPath = path.join(artifactsDir, latestRun, 'reports', 'synthesis.json');
         const synthesis = loadJson<Synthesis>(synthesisPath);
         if (synthesis) {
-          logger.log(`  UX Score: ${synthesis.overallAssessment.uxScore}/100`);
+          const score100 = synthesis.overallAssessment.uxScore;
+          const score10 = (score100 / 10).toFixed(1);
+          logger.log(`  UX Score: ${score100}/100 (${score10}/10)`);
           logger.log(`  Launch Readiness: ${synthesis.overallAssessment.launchReadiness}`);
           const totalIssues =
             synthesis.consensusIssues.length +

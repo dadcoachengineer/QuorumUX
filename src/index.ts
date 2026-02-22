@@ -449,7 +449,7 @@ COMMANDS
   init                        Interactive project setup wizard
   run [options]               Run the analysis pipeline (default if no command given)
   status                      Show project config, API key, and latest run info
-  compare <baseline> <current>  Compare two runs side-by-side
+  compare [--json] <baseline> <current>  Compare two runs side-by-side
 
 OPTIONS (for run)
   --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
