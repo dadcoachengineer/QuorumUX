@@ -7,11 +7,11 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumUXConfig, Synthesis, ScreenshotAnalysis, VideoAnalysis, PersonaSummary } from '../types';
-import { callOpenRouter } from '../models/openrouter';
-import * as logger from '../utils/logger';
-import { loadJson, loadText } from '../utils/files';
-import { CostTracker } from '../utils/costs';
+import { QuorumUXConfig, Synthesis, ScreenshotAnalysis, VideoAnalysis, PersonaSummary } from '../types.js';
+import { callOpenRouter } from '../models/openrouter.js';
+import * as logger from '../utils/logger.js';
+import { loadJson, loadText } from '../utils/files.js';
+import { CostTracker } from '../utils/costs.js';
 
 export async function synthesize(config: QuorumUXConfig, runDir: string, tracker?: CostTracker): Promise<void> {
   logger.stage('Stage 3: Cross-Model Synthesis');

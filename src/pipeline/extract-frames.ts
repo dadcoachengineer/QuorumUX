@@ -8,9 +8,9 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { QuorumUXConfig } from '../types';
-import * as logger from '../utils/logger';
-import { ensureDir } from '../utils/files';
+import { QuorumUXConfig } from '../types.js';
+import * as logger from '../utils/logger.js';
+import { ensureDir } from '../utils/files.js';
 
 /**
  * Verify that ffmpeg and ImageMagick montage are installed before running Stage 1.

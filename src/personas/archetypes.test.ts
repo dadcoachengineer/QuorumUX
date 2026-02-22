@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ARCHETYPES } from './archetypes';
+import { ARCHETYPES } from './archetypes.js';
 
 describe('ARCHETYPES', () => {
   it('has exactly 10 archetypes', () => {

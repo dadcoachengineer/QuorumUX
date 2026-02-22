@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveArtifacts } from './files';
+import { resolveArtifacts } from './files.js';
 
 describe('resolveArtifacts', () => {
   const runDir = '/tmp/artifacts/run-2026-02-22T10-00';

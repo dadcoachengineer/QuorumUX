@@ -8,7 +8,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { GlobalConfig } from '../types';
+import { GlobalConfig } from '../types.js';
 
 const QUORUMUX_DIR = path.join(process.env.HOME || '~', '.quorumux');
 const CONFIG_PATH = path.join(QUORUMUX_DIR, 'config.json');

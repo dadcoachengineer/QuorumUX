@@ -4,7 +4,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import type { RunArtifacts } from '../types';
+import type { RunArtifacts } from '../types.js';
 
 /**
  * Find the most recent run-* directory in the artifacts dir.
