@@ -17,6 +17,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'node:url';
 import { QuorumUXConfig, PipelineOptions } from './types';
 
 // Public type re-exports for consumers of the npm package
@@ -485,7 +486,15 @@ function printSummary(config: QuorumUXConfig, runDir: string, tracker: CostTrack
 }
 
 // Only run CLI when executed directly (not when imported for types)
-const isDirectRun = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'));
+// Resolve symlinks (npm bin creates them) so both sides compare real paths
+const isDirectRun = (() => {
+  if (!process.argv[1]) return false;
+  try {
+    return fileURLToPath(import.meta.url) === fs.realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
 if (isDirectRun) {
   main();
 }
