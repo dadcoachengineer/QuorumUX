@@ -1,5 +1,5 @@
 /**
- * Global Config Management (~/.quorum/config.json)
+ * Global Config Management (~/.quorumux/config.json)
  *
  * Handles global settings that persist across projects:
  * - API key storage (env var preferred, global config as fallback)
@@ -10,10 +10,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GlobalConfig } from '../types';
 
-const QUORUM_DIR = path.join(process.env.HOME || '~', '.quorum');
-const CONFIG_PATH = path.join(QUORUM_DIR, 'config.json');
+const QUORUMUX_DIR = path.join(process.env.HOME || '~', '.quorumux');
+const CONFIG_PATH = path.join(QUORUMUX_DIR, 'config.json');
 
-/** Load global config from ~/.quorum/config.json. Returns empty config if not found. */
+/** Load global config from ~/.quorumux/config.json. Returns empty config if not found. */
 export function loadGlobalConfig(): GlobalConfig {
   if (!fs.existsSync(CONFIG_PATH)) {
     return {};
@@ -27,10 +27,10 @@ export function loadGlobalConfig(): GlobalConfig {
   }
 }
 
-/** Save global config to ~/.quorum/config.json. Creates ~/.quorum/ if needed. */
+/** Save global config to ~/.quorumux/config.json. Creates ~/.quorumux/ if needed. */
 export function saveGlobalConfig(config: GlobalConfig): void {
-  if (!fs.existsSync(QUORUM_DIR)) {
-    fs.mkdirSync(QUORUM_DIR, { recursive: true });
+  if (!fs.existsSync(QUORUMUX_DIR)) {
+    fs.mkdirSync(QUORUMUX_DIR, { recursive: true });
   }
   fs.writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2) + '\n');
 }
@@ -39,7 +39,7 @@ export function saveGlobalConfig(config: GlobalConfig): void {
  * Resolve API key using the priority chain:
  * 1. OPENROUTER_API_KEY env var
  * 2. .env / .env.local in project dir
- * 3. ~/.quorum/config.json → apiKey
+ * 3. ~/.quorumux/config.json → apiKey
  *
  * Returns the key or undefined if not found anywhere.
  */

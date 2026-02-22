@@ -1,20 +1,20 @@
-# Quorum
+# QuorumUX
 
 **Multi-model consensus UX analysis from E2E test artifacts.**
 
-Quorum sends your Playwright screenshots and video recordings to multiple AI vision models, then synthesizes their findings into a single prioritized report with consensus-weighted severity. Issues flagged by 2+ models are high confidence. Video analysis catches temporal friction (hesitation, confusion, loading delays) that screenshots miss.
+QuorumUX sends your Playwright screenshots and video recordings to multiple AI vision models, then synthesizes their findings into a single prioritized report with consensus-weighted severity. Issues flagged by 2+ models are high confidence. Video analysis catches temporal friction (hesitation, confusion, loading delays) that screenshots miss.
 
 ## How It Works
 
 <div align="center">
 
-![Quorum Pipeline Diagram](docs/pipeline.svg)
+![QuorumUX Pipeline Diagram](docs/pipeline.svg)
 
 </div>
 
 ## What Makes This Different
 
-Most visual testing tools compare pixels. Quorum asks AI models to think like UX researchers.
+Most visual testing tools compare pixels. QuorumUX asks AI models to think like UX researchers.
 
 - **Multi-model consensus** — 3 models analyze independently, a 4th synthesizes. Issues flagged by 2+ models are high confidence. Single-model findings need human review. Disagreements are surfaced explicitly.
 - **Video temporal analysis** — Gemini watches your screen recordings and identifies hesitation (cursor pauses), confusion (backtracking), interaction patterns (rage clicks), and loading delays. This catches friction invisible to static screenshots.
@@ -29,22 +29,22 @@ Most visual testing tools compare pixels. Quorum asks AI models to think like UX
 npm install quorum-ux
 
 # Interactive setup — walks you through API key, personas, and model selection
-npx quorum init
+npx quorumux init
 
 # Preview what the pipeline will do and estimated cost
-npx quorum --dry-run
+npx quorumux --dry-run
 
 # Run the full pipeline
-npx quorum
+npx quorumux
 ```
 
 Or configure manually:
 
 ```bash
-cat > quorum.config.ts << 'EOF'
-import type { QuorumConfig } from 'quorum-ux';
+cat > quorumux.config.ts << 'EOF'
+import type { QuorumUXConfig } from 'quorum-ux';
 
-const config: QuorumConfig = {
+const config: QuorumUXConfig = {
   name: 'MyApp',
   description: 'A project management tool for distributed teams',
   domain: 'productivity',
@@ -65,7 +65,7 @@ const config: QuorumConfig = {
 export default config;
 EOF
 
-OPENROUTER_API_KEY=sk-or-... npx quorum
+OPENROUTER_API_KEY=sk-or-... npx quorumux
 ```
 
 ## Prerequisites
@@ -78,7 +78,7 @@ OPENROUTER_API_KEY=sk-or-... npx quorum
 
 ## Artifact Directory Structure
 
-Quorum expects your test runner to produce artifacts in this structure:
+QuorumUX expects your test runner to produce artifacts in this structure:
 
 ```
 test-artifacts/
@@ -96,19 +96,19 @@ test-artifacts/
     └── executive-summary.md          # Optional: test runner's summary
 ```
 
-Naming conventions are flexible — Quorum discovers personas from subdirectory names.
+Naming conventions are flexible — QuorumUX discovers personas from subdirectory names.
 
 ## CLI Reference
 
 ```
-npx quorum [command] [options]
+npx quorumux [command] [options]
 
 Commands:
   init               Interactive project setup wizard
   run [options]       Run the analysis pipeline (default)
 
 Options:
-  --config <path>      Path to quorum.config.ts (default: ./quorum.config.ts)
+  --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
   --run-dir <path>     Specific run directory (auto-detects latest run-*)
   --start-stage <n>    Start from stage 1, 2, 3, or 4 (default: 1)
   --skip-video         Skip Stage 2b video analysis
@@ -118,7 +118,7 @@ Options:
 
 Environment:
   OPENROUTER_API_KEY   API key for OpenRouter (preferred).
-                       Also reads from .env / .env.local or ~/.quorum/config.json.
+                       Also reads from .env / .env.local or ~/.quorumux/config.json.
 ```
 
 ## Pipeline Stages
@@ -135,7 +135,7 @@ Stages 2 and 2b run in parallel. You can start from any stage with `--start-stag
 
 ## Persona Archetypes
 
-Quorum includes 10 built-in persona archetypes for universal UX testing. Select them during `quorum init` or reference them in your config:
+QuorumUX includes 10 built-in persona archetypes for universal UX testing. Select them during `quorumux init` or reference them in your config:
 
 | Archetype | Testing Focus | Device |
 |-----------|--------------|--------|
@@ -150,7 +150,7 @@ Quorum includes 10 built-in persona archetypes for universal UX testing. Select 
 | **Skeptical Evaluator** | Edge cases, competitor comparison | Desktop |
 | **International User** | i18n, locale, long text | Desktop |
 
-When persona IDs match an archetype, Quorum automatically injects behavioral context into the analysis prompts so models know what to look for.
+When persona IDs match an archetype, QuorumUX automatically injects behavioral context into the analysis prompts so models know what to look for.
 
 ## Output: What You Get
 
@@ -172,13 +172,13 @@ Raw structured data for programmatic consumption or custom reporting.
 
 ## Integrating with Your Test Runner
 
-Quorum is test-runner agnostic. It consumes artifacts, not test code. Any runner that produces screenshots and/or video works:
+QuorumUX is test-runner agnostic. It consumes artifacts, not test code. Any runner that produces screenshots and/or video works:
 
 - **Playwright** (recommended): Use `recordVideo` on browser context + `page.screenshot()` at checkpoints
 - **Cypress**: Use `cy.screenshot()` + video recording config
 - **Puppeteer**: Use `page.screenshot()` + screen recording via Chrome DevTools Protocol
 
-The optional `summaries/*.json` files give Quorum additional context (pass/fail counts, known issues) but aren't required. Without them, analysis is purely visual.
+The optional `summaries/*.json` files give QuorumUX additional context (pass/fail counts, known issues) but aren't required. Without them, analysis is purely visual.
 
 ## Cost
 

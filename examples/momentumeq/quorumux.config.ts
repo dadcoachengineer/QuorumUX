@@ -1,12 +1,12 @@
-import type { QuorumConfig } from '../../src/types';
+import type { QuorumUXConfig } from '../../src/types';
 
 /**
- * MomentumEQ — Quorum Configuration
+ * MomentumEQ — QuorumUX Configuration
  *
  * Values-driven career development platform.
  * React 18 + TypeScript + Vite, Supabase, Vercel.
  */
-const config: QuorumConfig = {
+const config: QuorumUXConfig = {
   name: 'MomentumEQ',
   description: 'A values-driven career development platform that helps users discover their core values through AI conversation, then set goals and build habits aligned with those values. Includes an AI coach for ongoing guidance.',
   domain: 'career-tech',

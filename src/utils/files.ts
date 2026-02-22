@@ -1,5 +1,5 @@
 /**
- * Quorum — File System Utilities
+ * QuorumUX — File System Utilities
  */
 
 import * as fs from 'fs';

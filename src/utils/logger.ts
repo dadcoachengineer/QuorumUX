@@ -1,5 +1,5 @@
 /**
- * Quorum — Structured Logger
+ * QuorumUX — Structured Logger
  *
  * Simple logging with consistent formatting and optional verbose mode.
  */

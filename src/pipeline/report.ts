@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import {
-  QuorumConfig,
+  QuorumUXConfig,
   Synthesis,
   ConsensusIssue,
   VideoOnlyIssue,
@@ -18,7 +18,7 @@ import {
 /**
  * Generate UX analysis report and GitHub issue templates from synthesis data
  */
-export async function generateReport(config: QuorumConfig, runDir: string): Promise<void> {
+export async function generateReport(config: QuorumUXConfig, runDir: string): Promise<void> {
   const reportsDir = path.join(runDir, 'reports');
   const synthesisPath = path.join(reportsDir, 'synthesis.json');
 
@@ -41,7 +41,7 @@ export async function generateReport(config: QuorumConfig, runDir: string): Prom
 /**
  * Generate full human-readable UX analysis report
  */
-function generateUXReport(config: QuorumConfig, synthesis: Synthesis): string {
+function generateUXReport(config: QuorumUXConfig, synthesis: Synthesis): string {
   const lines: string[] = [];
 
   lines.push(`# UX Analysis Report: ${config.name}`);
@@ -212,12 +212,12 @@ function generateUXReport(config: QuorumConfig, synthesis: Synthesis): string {
 /**
  * Generate GitHub issue templates with gh commands
  */
-function generateGitHubIssues(config: QuorumConfig, synthesis: Synthesis): string {
+function generateGitHubIssues(config: QuorumUXConfig, synthesis: Synthesis): string {
   const lines: string[] = [];
 
   lines.push(`# GitHub Issues: ${config.name}`);
   lines.push('');
-  lines.push('Ready-to-file issue templates generated from Quorum analysis.');
+  lines.push('Ready-to-file issue templates generated from QuorumUX analysis.');
   lines.push(`Generated: ${synthesis.synthesisDate}`);
   lines.push('');
   lines.push('---');

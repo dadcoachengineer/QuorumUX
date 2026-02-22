@@ -4,7 +4,7 @@
   "description": "Multi-model consensus UX analysis from E2E test artifacts",
   "type": "module",
   "bin": {
-    "quorum": "./dist/index.js"
+    "quorumux": "./dist/index.js"
   },
   "main": "./dist/index.js",
   "types": "./dist/types.d.ts",
