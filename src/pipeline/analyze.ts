@@ -12,6 +12,7 @@ import { callOpenRouter, OpenRouterResponse } from '../models/openrouter';
 import * as logger from '../utils/logger';
 import { ensureDir, loadJson } from '../utils/files';
 import { CostTracker } from '../utils/costs';
+import { getArchetypeById } from '../personas';
 
 export async function analyzeScreenshots(
   config: QuorumConfig,
@@ -170,6 +171,19 @@ function buildScreenshotSystemPrompt(config: QuorumConfig, personaSummary: Perso
       `Top Friction Point: ${personaSummary.topFrictionPoint}`,
       `Top Delight: ${personaSummary.topDelight}`
     );
+
+    // Inject archetype behavior notes if this persona matches a known archetype
+    const archetype = getArchetypeById(personaSummary.personaId);
+    if (archetype) {
+      parts.push(
+        ``,
+        `**Archetype: ${archetype.name}**`,
+        archetype.behaviorNotes
+      );
+      if (archetype.accessibilityNeeds?.length) {
+        parts.push(`Accessibility needs: ${archetype.accessibilityNeeds.join(', ')}`);
+      }
+    }
   }
 
   if (config.analysisContext) {
