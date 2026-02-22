@@ -23,7 +23,8 @@
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "files": [
     "dist",
