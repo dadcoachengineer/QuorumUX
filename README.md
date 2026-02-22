@@ -6,50 +6,9 @@ Quorum sends your Playwright screenshots and video recordings to multiple AI vis
 
 ## How It Works
 
-```
-┌─────────────────┐     ┌─────────────────────────────────────────────────┐
-│  Your E2E Tests  │────▶│  test-artifacts/run-2026-02-22/                 │
-│  (Playwright)    │     │  ├── videos/P01-maria/recording.webm            │
-└─────────────────┘     │  ├── screenshots/P01-maria/step01-PASS-login.png│
-                        │  ├── summaries/P01-maria-summary.json           │
-                        │  └── executive-summary.md                       │
-                        └────────────────────┬────────────────────────────┘
-                                             │
-                    ┌────────────────────────┐│┌────────────────────────┐
-                    │  Stage 1               │││                        │
-                    │  Extract frames        │││  quorum.config.ts      │
-                    │  Build screenshot grids│││  (your project config) │
-                    └───────────┬────────────┘│└────────────────────────┘
-                                │             │
-                  ┌─────────────┴─────────────┴──────────────┐
-                  │              Stage 2 (parallel)           │
-                  │                                           │
-                  │  ┌─────────┐ ┌─────────┐ ┌─────────┐    │
-                  │  │ Claude  │ │ Gemini  │ │ GPT-4o  │    │  Screenshots
-                  │  │ Sonnet  │ │ Flash   │ │         │    │
-                  │  └────┬────┘ └────┬────┘ └────┬────┘    │
-                  │       │           │           │          │
-                  │                Stage 2b                  │
-                  │       ┌───────────────────┐              │
-                  │       │  Gemini (Video)   │              │  Video temporal
-                  │       │  Hesitation, flow │              │  analysis
-                  │       │  timing, patterns │              │
-                  │       └─────────┬─────────┘              │
-                  └─────────────────┼────────────────────────┘
-                                    │
-                        ┌───────────┴───────────┐
-                        │  Stage 3: Synthesis    │
-                        │  Claude Opus           │
-                        │  Cross-model consensus │
-                        │  Severity weighting    │
-                        └───────────┬───────────┘
-                                    │
-                        ┌───────────┴───────────┐
-                        │  Stage 4: Report       │
-                        │  ux-analysis-report.md │
-                        │  github-issues.md      │
-                        └───────────────────────┘
-```
+<p align="center">
+  <img src="docs/pipeline.svg" alt="Quorum Pipeline Diagram" width="800">
+</p>
 
 ## What Makes This Different
 
@@ -67,7 +26,19 @@ Most visual testing tools compare pixels. Quorum asks AI models to think like UX
 # Install
 npm install quorum-ux
 
-# Create config
+# Interactive setup — walks you through API key, personas, and model selection
+npx quorum init
+
+# Preview what the pipeline will do and estimated cost
+npx quorum --dry-run
+
+# Run the full pipeline
+npx quorum
+```
+
+Or configure manually:
+
+```bash
 cat > quorum.config.ts << 'EOF'
 import type { QuorumConfig } from 'quorum-ux';
 
@@ -92,7 +63,6 @@ const config: QuorumConfig = {
 export default config;
 EOF
 
-# Run the pipeline on your latest test artifacts
 OPENROUTER_API_KEY=sk-or-... npx quorum
 ```
 
@@ -129,15 +99,24 @@ Naming conventions are flexible — Quorum discovers personas from subdirectory 
 ## CLI Reference
 
 ```
-npx quorum [options]
+npx quorum [command] [options]
+
+Commands:
+  init               Interactive project setup wizard
+  run [options]       Run the analysis pipeline (default)
 
 Options:
   --config <path>      Path to quorum.config.ts (default: ./quorum.config.ts)
   --run-dir <path>     Specific run directory (auto-detects latest run-*)
   --start-stage <n>    Start from stage 1, 2, 3, or 4 (default: 1)
   --skip-video         Skip Stage 2b video analysis
+  --dry-run            Show what would run without making API calls
   --verbose            Verbose output
   --help               Show help
+
+Environment:
+  OPENROUTER_API_KEY   API key for OpenRouter (preferred).
+                       Also reads from .env / .env.local or ~/.quorum/config.json.
 ```
 
 ## Pipeline Stages
@@ -151,6 +130,25 @@ Options:
 | **4: Report** | synthesis.json | ux-analysis-report.md, github-issues.md | None (templating) |
 
 Stages 2 and 2b run in parallel. You can start from any stage with `--start-stage`.
+
+## Persona Archetypes
+
+Quorum includes 10 built-in persona archetypes for universal UX testing. Select them during `quorum init` or reference them in your config:
+
+| Archetype | Testing Focus | Device |
+|-----------|--------------|--------|
+| **Happy Path Hero** | Ideal journey, full completion | Desktop |
+| **Speed Runner** | Skip/rush behavior, task efficiency | Desktop |
+| **Cautious Explorer** | Reads everything, hesitates | Desktop |
+| **Mobile-First User** | Touch interactions, small viewport | Mobile |
+| **Accessibility User** | Screen reader, keyboard nav | Desktop |
+| **Distracted Multitasker** | Tab switching, mid-flow pauses | Desktop |
+| **Error-Prone Novice** | Wrong inputs, recovery paths | Desktop |
+| **Power User** | Keyboard shortcuts, advanced features | Desktop |
+| **Skeptical Evaluator** | Edge cases, competitor comparison | Desktop |
+| **International User** | i18n, locale, long text | Desktop |
+
+When persona IDs match an archetype, Quorum automatically injects behavioral context into the analysis prompts so models know what to look for.
 
 ## Output: What You Get
 
