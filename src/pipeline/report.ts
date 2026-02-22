@@ -13,14 +13,16 @@ import {
   VideoOnlyIssue,
   ModelUniqueIssue,
   Disagreement,
+  ReportJSON,
+  ReportJSONIssue,
 } from '../types.js';
 
 /**
  * Generate UX analysis report and GitHub issue templates from synthesis data
  */
-export async function generateReport(config: QuorumUXConfig, runDir: string): Promise<void> {
-  const reportsDir = path.join(runDir, 'reports');
-  const synthesisPath = path.join(reportsDir, 'synthesis.json');
+export async function generateReport(config: QuorumUXConfig, runDir: string, outputDir?: string): Promise<void> {
+  const sourceReportsDir = path.join(runDir, 'reports');
+  const synthesisPath = path.join(sourceReportsDir, 'synthesis.json');
 
   if (!fs.existsSync(synthesisPath)) {
     throw new Error(`Synthesis file not found at ${synthesisPath}`);
@@ -29,13 +31,24 @@ export async function generateReport(config: QuorumUXConfig, runDir: string): Pr
   const synthesisJson = fs.readFileSync(synthesisPath, 'utf-8');
   const synthesis: Synthesis = JSON.parse(synthesisJson);
 
+  // Determine output directory
+  const targetDir = outputDir || sourceReportsDir;
+  if (outputDir) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+
   // Generate human-readable report
   const uxReport = generateUXReport(config, synthesis);
-  fs.writeFileSync(path.join(reportsDir, 'ux-analysis-report.md'), uxReport);
+  fs.writeFileSync(path.join(targetDir, 'ux-analysis-report.md'), uxReport);
 
   // Generate GitHub issues markdown
   const githubIssues = generateGitHubIssues(config, synthesis);
-  fs.writeFileSync(path.join(reportsDir, 'github-issues.md'), githubIssues);
+  fs.writeFileSync(path.join(targetDir, 'github-issues.md'), githubIssues);
+
+  // Generate JSON sidecar
+  const runId = path.basename(runDir);
+  const jsonReport = generateReportJSON(config, synthesis, runId);
+  fs.writeFileSync(path.join(targetDir, 'ux-analysis-report.json'), JSON.stringify(jsonReport, null, 2) + '\n');
 }
 
 /**
@@ -356,4 +369,76 @@ function groupVideoIssuesBySeverity(
     groups[issue.severity].push(issue);
   });
   return groups;
+}
+
+/**
+ * Generate a flat JSON report for programmatic consumption
+ */
+function generateReportJSON(config: QuorumUXConfig, synthesis: Synthesis, runId: string): ReportJSON {
+  const issues: ReportJSONIssue[] = [];
+
+  for (const issue of synthesis.consensusIssues) {
+    issues.push({
+      type: 'consensus',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      category: issue.category,
+      effort: issue.effort,
+      evidence: issue.evidence,
+      temporalInsight: issue.temporalInsight,
+    });
+  }
+
+  for (const issue of synthesis.videoOnlyIssues) {
+    issues.push({
+      type: 'video-only',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      timestamp: issue.timestamp,
+      persona: issue.persona,
+    });
+  }
+
+  for (const issue of synthesis.modelUniqueIssues) {
+    issues.push({
+      type: 'model-unique',
+      id: issue.id,
+      title: issue.title,
+      severity: issue.severity,
+      description: issue.description,
+      recommendation: issue.recommendation,
+      reportedBy: issue.reportedBy,
+      confidence: issue.confidence,
+    });
+  }
+
+  // Collect unique model and persona names from evidence
+  const models = new Set<string>();
+  for (const issue of synthesis.consensusIssues) {
+    for (const m of issue.evidence.screenshotModels) models.add(m);
+  }
+  const personas = new Set<string>();
+  for (const issue of synthesis.consensusIssues) {
+    for (const p of issue.evidence.affectedPersonas) personas.add(p);
+  }
+
+  return {
+    runId,
+    generatedAt: new Date().toISOString(),
+    projectName: config.name,
+    score: synthesis.overallAssessment.uxScore,
+    launchReadiness: synthesis.overallAssessment.launchReadiness,
+    issueCount: issues.length,
+    issues,
+    models: [...models].sort(),
+    personas: [...personas].sort(),
+    topStrengths: synthesis.overallAssessment.topStrengths,
+    criticalPath: synthesis.overallAssessment.criticalPath,
+  };
 }
