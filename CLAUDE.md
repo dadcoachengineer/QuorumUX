@@ -10,6 +10,8 @@ Multi-model consensus UX analysis pipeline. Sends Playwright screenshots and vid
 npx tsx src/index.ts --dry-run          # Dev: preview pipeline plan
 npx tsx src/index.ts                     # Dev: run full pipeline
 npx tsx src/index.ts --start-stage 3     # Dev: resume from stage 3
+npm test                                 # Run unit tests (vitest)
+npm run test:watch                       # Run tests in watch mode
 npm run typecheck                        # Type check only
 npm run build                            # Build to dist/
 ```
@@ -94,7 +96,7 @@ Importing the package for types does **not** trigger the CLI — `index.ts` has 
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
 - **Published on npm** as `quorum-ux@0.1.0`.
-- **No test suite yet** — pipeline has been validated end-to-end (Stages 1-4) with live API calls against MomentumEQ test artifacts (48 API calls, $2.07, zero errors).
+- **Test suite**: vitest, 72 unit tests across 6 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
 - **Stage outputs** go in `{runDir}/reports/` — not the project root.
 
 ## Gotchas
