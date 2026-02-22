@@ -95,8 +95,10 @@ Importing the package for types does **not** trigger the CLI — `index.ts` has 
 - **npm package**: `quorum-ux` (hyphenated, for npm).
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
-- **Published on npm** as `quorum-ux@0.1.0`.
+- **Published on npm** as `quorum-ux@0.1.1`.
 - **Test suite**: vitest, 72 unit tests across 6 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
+- **Module system**: tsconfig uses `module: "NodeNext"` / `moduleResolution: "NodeNext"`. All relative imports in `.ts` source must use `.js` extensions (e.g., `from './types.js'`). TS resolves them to `.ts` at compile time but emits them as-is for Node ESM.
+- **CI**: GitHub Actions runs on push to `main` and PRs — test (Node 18/20/22 matrix), typecheck, and build (with dist test-file leak check).
 - **Stage outputs** go in `{runDir}/reports/` — not the project root.
 
 ## Gotchas
