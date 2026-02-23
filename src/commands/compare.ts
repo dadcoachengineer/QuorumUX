@@ -35,6 +35,12 @@ export interface PersistingIssue {
   matchConfidence?: number;
 }
 
+export interface PersistingVariant {
+  issue: CompareIssue;
+  similarTo: CompareIssue;
+  similarityScore: number;
+}
+
 export interface CompareResult {
   scoreDelta: number;
   baselineScore: number;
@@ -45,7 +51,9 @@ export interface CompareResult {
   resolvedIssues: CompareIssue[];
   newIssues: CompareIssue[];
   persistingIssues: PersistingIssue[];
+  persistingVariants: PersistingVariant[];
   regressions: PersistingIssue[];
+  scoreContext: string;
   severityDistribution: {
     baseline: Record<string, number>;
     current: Record<string, number>;
@@ -56,13 +64,43 @@ export interface CompareResult {
 
 const SEVERITY_ORDER: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
 
+const FILLER_ADVERBS = new Set([
+  'consistently', 'permanently', 'completely', 'inappropriately', 'repeatedly',
+  'unexpectedly', 'excessively', 'extremely', 'significantly', 'severely',
+  'very', 'highly', 'particularly', 'notably', 'somewhat', 'slightly',
+  'relatively', 'quite',
+]);
+
+const SYNONYM_MAP: Record<string, string> = {
+  latency: 'performance',
+  freeze: 'block',
+  frozen: 'block',
+  stuck: 'block',
+  inaccessible: 'not accessible',
+  navigation: 'nav',
+};
+
 /**
- * Jaccard word-overlap similarity on lowercased, whitespace-split tokens.
+ * Normalize an issue title for comparison: strip severity prefixes,
+ * remove filler adverbs, normalize synonyms, collapse whitespace.
+ */
+export function normalizeTitle(title: string): string {
+  let t = title.replace(/^\s*\[?P[012]\]?\s*[:—-]?\s*/i, '');
+  t = t.toLowerCase();
+  const words = t.split(/\s+/).filter(Boolean);
+  const normalized = words
+    .filter((w) => !FILLER_ADVERBS.has(w))
+    .map((w) => SYNONYM_MAP[w] ?? w);
+  return normalized.join(' ').trim();
+}
+
+/**
+ * Jaccard word-overlap similarity on normalized, lowercased, whitespace-split tokens.
  * Returns 0.0–1.0.
  */
 export function jaccardSimilarity(a: string, b: string): number {
-  const setA = new Set(a.toLowerCase().split(/\s+/).filter(Boolean));
-  const setB = new Set(b.toLowerCase().split(/\s+/).filter(Boolean));
+  const setA = new Set(normalizeTitle(a).split(/\s+/).filter(Boolean));
+  const setB = new Set(normalizeTitle(b).split(/\s+/).filter(Boolean));
   if (setA.size === 0 && setB.size === 0) return 1.0;
   if (setA.size === 0 || setB.size === 0) return 0.0;
   let intersection = 0;
@@ -198,6 +236,39 @@ function countSeverities(synthesis: Synthesis): Record<string, number> {
 }
 
 /**
+ * Interpretive context line for the score delta.
+ */
+export function generateScoreContext(result: CompareResult): string {
+  const parts: string[] = [];
+
+  if (result.resolvedIssues.length === 0 && result.newIssues.length === 0
+    && result.persistingVariants.length === 0 && result.regressions.length === 0) {
+    return 'No meaningful changes between runs';
+  }
+
+  if (result.scoreDelta > 0) {
+    const resolvedP0s = result.resolvedIssues.filter((i) => i.severity === 'P0');
+    if (resolvedP0s.length > 0) {
+      parts.push(`${resolvedP0s.length} P0 issue${resolvedP0s.length > 1 ? 's' : ''} resolved`);
+    }
+  } else if (result.scoreDelta < 0) {
+    const newP0s = result.newIssues.filter((i) => i.severity === 'P0');
+    if (newP0s.length > 0) {
+      parts.push(`${newP0s.length} new P0 issue${newP0s.length > 1 ? 's' : ''} introduced`);
+    }
+    if (result.regressions.length > 0) {
+      parts.push(`${result.regressions.length} regression${result.regressions.length > 1 ? 's' : ''}`);
+    }
+  }
+
+  if (result.persistingVariants.length > 0) {
+    parts.push(`${result.persistingVariants.length} issue${result.persistingVariants.length > 1 ? 's' : ''} reworded but not resolved`);
+  }
+
+  return parts.join('; ');
+}
+
+/**
  * Pure function: compare two syntheses and return structured diff.
  * Uses two-pass matching (exact ID + fuzzy title) and score normalization.
  */
@@ -234,6 +305,37 @@ export function compareSyntheses(
     }
   }
 
+  // Bidirectional variant detection: find unmatched pairs that are similar
+  // but below the primary match threshold
+  const persistingVariants: PersistingVariant[] = [];
+  const variantBaselineIdxs = new Set<number>();
+  const variantCurrentIdxs = new Set<number>();
+
+  const variantCandidates: Array<{ bi: number; ci: number; similarity: number }> = [];
+  for (let ci = 0; ci < unmatchedCurrent.length; ci++) {
+    for (let bi = 0; bi < unmatchedBaseline.length; bi++) {
+      const sim = jaccardSimilarity(unmatchedCurrent[ci].title, unmatchedBaseline[bi].title);
+      if (sim >= 0.5) {
+        variantCandidates.push({ bi, ci, similarity: sim });
+      }
+    }
+  }
+  variantCandidates.sort((a, b) => b.similarity - a.similarity);
+  for (const { bi, ci, similarity } of variantCandidates) {
+    if (variantBaselineIdxs.has(bi) || variantCurrentIdxs.has(ci)) continue;
+    persistingVariants.push({
+      issue: unmatchedCurrent[ci],
+      similarTo: unmatchedBaseline[bi],
+      similarityScore: Math.round(similarity * 100),
+    });
+    variantBaselineIdxs.add(bi);
+    variantCurrentIdxs.add(ci);
+  }
+
+  // Filter variants out of resolved/new lists
+  const resolvedIssues = unmatchedBaseline.filter((_, i) => !variantBaselineIdxs.has(i));
+  const newIssues = unmatchedCurrent.filter((_, i) => !variantCurrentIdxs.has(i));
+
   // Score normalization
   const baselineScore = normalizeScore(baseline.overallAssessment.uxScore);
   const currentScore = normalizeScore(current.overallAssessment.uxScore);
@@ -245,22 +347,27 @@ export function compareSyntheses(
     ? currentAdj - baselineAdj
     : undefined;
 
-  return {
+  const result: CompareResult = {
     scoreDelta: currentScore - baselineScore,
     baselineScore,
     currentScore,
     adjustedDelta,
     baselineReadiness: baseline.overallAssessment.launchReadiness,
     currentReadiness: current.overallAssessment.launchReadiness,
-    resolvedIssues: unmatchedBaseline,
-    newIssues: unmatchedCurrent,
+    resolvedIssues,
+    newIssues,
     persistingIssues,
+    persistingVariants,
     regressions,
+    scoreContext: '',
     severityDistribution: {
       baseline: countSeverities(baseline),
       current: countSeverities(current),
     },
   };
+
+  result.scoreContext = generateScoreContext(result);
+  return result;
 }
 
 // ─── CLI handler ────────────────────────────────────────────────────────────
@@ -329,6 +436,9 @@ export async function runCompare(args: string[]): Promise<void> {
     const adjSign = result.adjustedDelta >= 0 ? '+' : '';
     logger.log(`  Adjusted: ${adjSign}${result.adjustedDelta}`);
   }
+  if (result.scoreContext) {
+    logger.log(`  Context:  ${result.scoreContext}`);
+  }
 
   logger.stage('Severity Distribution');
   for (const sev of ['P0', 'P1', 'P2']) {
@@ -343,6 +453,14 @@ export async function runCompare(args: string[]): Promise<void> {
     logger.stage(`Resolved Issues (${result.resolvedIssues.length})`);
     for (const issue of result.resolvedIssues) {
       logger.log(`  - [${issue.severity}] ${issue.title}`);
+    }
+  }
+
+  if (result.persistingVariants.length > 0) {
+    logger.stage(`Persisting Variants (${result.persistingVariants.length})`);
+    for (const v of result.persistingVariants) {
+      logger.log(`  ~ [${v.issue.severity}] ${v.issue.title}`);
+      logger.log(`    ↳ Similar to resolved: "${v.similarTo.title}" (${v.similarityScore}% similar)`);
     }
   }
 

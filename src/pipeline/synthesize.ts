@@ -364,6 +364,13 @@ function buildSynthesisUserMessage(
     `     missing test data), automation timing (Playwright wait failures), cookie/auth`,
     `     state not set up, placeholder/mock data visible`,
     `   - "app" = real product issues visible to end users (default when uncertain)`,
+    `8. **Title convention**: Start each title with the affected component in brackets.`,
+    `   - Format: "[Component] Verb phrase describing the issue"`,
+    `   - Components: [Login], [Modal], [Navigation], [Settings], [Assessment], [Coach], [Mobile], [Form], etc.`,
+    `   - Use consistent verbs: "blocks", "fails", "missing", "slow", "overlaps", "triggers incorrectly"`,
+    `   - Good: "[Modal] Overlay blocks navigation after Quick Assessment"`,
+    `   - Good: "[Login] First-login redirect exceeds 6 seconds"`,
+    `   - Bad: "Login performance exceeds acceptable thresholds" (too vague, no component bracket)`,
   );
 
   return parts.join('\n');
