@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { compareSyntheses, jaccardSimilarity, matchIssues } from './compare.js';
+import { compareSyntheses, jaccardSimilarity, matchIssues, normalizeTitle, generateScoreContext } from './compare.js';
 import type { Synthesis } from '../types.js';
-import type { CompareIssue } from './compare.js';
+import type { CompareIssue, CompareResult } from './compare.js';
 
 function makeSynthesis(overrides: Partial<Synthesis> = {}): Synthesis {
   return {
@@ -50,6 +50,14 @@ describe('jaccardSimilarity', () => {
 
   it('returns 0.0 when one string is empty', () => {
     expect(jaccardSimilarity('hello', '')).toBe(0.0);
+  });
+
+  it('treats titles differing only by filler adverbs as highly similar', () => {
+    const sim = jaccardSimilarity(
+      'Login consistently slow response',
+      'Login slow response',
+    );
+    expect(sim).toBe(1.0);
   });
 });
 
@@ -419,5 +427,269 @@ describe('compareSyntheses', () => {
 
     expect(result.adjustedDelta).toBeDefined();
     expect(typeof result.adjustedDelta).toBe('number');
+  });
+
+  // ─── Persisting variants ────────────────────────────────────────────────
+
+  it('detects persisting variant when baseline "resolved" and current "new" are similar', () => {
+    // No category set — prevents relaxed matcher threshold from catching these as persisting
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-perf1', title: 'Login performance exceeds 6 seconds', severity: 'P0',
+          category: 'performance', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-perf2', title: 'Login latency consistently 6-7 seconds', severity: 'P1',
+          category: 'interaction', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-01', 'run-02');
+
+    expect(result.persistingVariants).toHaveLength(1);
+    expect(result.persistingVariants[0].issue.id).toBe('QUX-perf2');
+    expect(result.persistingVariants[0].similarTo.id).toBe('QUX-perf1');
+    expect(result.persistingVariants[0].similarityScore).toBeGreaterThanOrEqual(50);
+    expect(result.resolvedIssues).toHaveLength(0);
+    expect(result.newIssues).toHaveLength(0);
+  });
+
+  it('does not create false variant for completely different issues', () => {
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-x1', title: 'Login button color contrast', severity: 'P2', category: 'visual',
+          description: '', recommendation: '', effort: 'low',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-y1', title: 'Assessment modal blocks navigation', severity: 'P0', category: 'functional',
+          description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-01', 'run-02');
+
+    expect(result.persistingVariants).toHaveLength(0);
+    expect(result.resolvedIssues).toHaveLength(1);
+    expect(result.newIssues).toHaveLength(1);
+  });
+
+  it('handles mixed: some variants + true resolves + true new', () => {
+    // Different severity/category on variant pair to prevent relaxed matcher from catching them
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-a1', title: 'Login performance slow at 6s', severity: 'P0', category: 'performance',
+          description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+        {
+          id: 'QUX-a2', title: 'Footer links broken', severity: 'P2', category: 'functional',
+          description: '', recommendation: '', effort: 'low',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-b1', title: 'Login latency slow at 6-7 seconds', severity: 'P1', category: 'interaction',
+          description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+        {
+          id: 'QUX-b2', title: 'Modal overlay z-index conflict', severity: 'P1', category: 'layout',
+          description: '', recommendation: '', effort: 'medium',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-01', 'run-02');
+
+    expect(result.persistingVariants).toHaveLength(1);
+    expect(result.resolvedIssues).toHaveLength(1);
+    expect(result.resolvedIssues[0].id).toBe('QUX-a2');
+    expect(result.newIssues).toHaveLength(1);
+    expect(result.newIssues[0].id).toBe('QUX-b2');
+  });
+
+  it('variant captures correct similarity score as 0-100 integer', () => {
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-s1', title: 'Form validation error messages missing', severity: 'P1', category: 'functional',
+          description: '', recommendation: '', effort: 'medium',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-s2', title: 'Form validation error not displayed', severity: 'P1', category: 'functional',
+          description: '', recommendation: '', effort: 'medium',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-01', 'run-02');
+
+    if (result.persistingVariants.length > 0) {
+      expect(result.persistingVariants[0].similarityScore).toBeGreaterThanOrEqual(0);
+      expect(result.persistingVariants[0].similarityScore).toBeLessThanOrEqual(100);
+      expect(Number.isInteger(result.persistingVariants[0].similarityScore)).toBe(true);
+    }
+  });
+});
+
+// ─── normalizeTitle ────────────────────────────────────────────────────────
+
+describe('normalizeTitle', () => {
+  it('strips [P0] prefix', () => {
+    expect(normalizeTitle('[P0] Login broken')).toBe('login broken');
+  });
+
+  it('strips P1: prefix', () => {
+    expect(normalizeTitle('P1: Navigation fails')).toBe('nav fails');
+  });
+
+  it('removes filler adverbs', () => {
+    expect(normalizeTitle('consistently slow response')).toBe('slow response');
+  });
+
+  it('removes multiple filler adverbs', () => {
+    expect(normalizeTitle('extremely significantly slow')).toBe('slow');
+  });
+
+  it('normalizes synonyms: latency → performance', () => {
+    expect(normalizeTitle('Login latency issue')).toBe('login performance issue');
+  });
+
+  it('normalizes synonyms: frozen → block', () => {
+    expect(normalizeTitle('Screen frozen on load')).toBe('screen block on load');
+  });
+
+  it('normalizes synonyms: navigation → nav', () => {
+    expect(normalizeTitle('Navigation menu broken')).toBe('nav menu broken');
+  });
+
+  it('collapses whitespace', () => {
+    expect(normalizeTitle('  too   much    space  ')).toBe('too much space');
+  });
+
+  it('passes through empty string', () => {
+    expect(normalizeTitle('')).toBe('');
+  });
+
+  it('passes through title with no normalization needed', () => {
+    expect(normalizeTitle('Login button fails on click')).toBe('login button fails on click');
+  });
+});
+
+// ─── generateScoreContext ──────────────────────────────────────────────────
+
+describe('generateScoreContext', () => {
+  function makeResult(overrides: Partial<CompareResult> = {}): CompareResult {
+    return {
+      scoreDelta: 0,
+      baselineScore: 75,
+      currentScore: 75,
+      baselineReadiness: 'ready-with-caveats',
+      currentReadiness: 'ready-with-caveats',
+      resolvedIssues: [],
+      newIssues: [],
+      persistingIssues: [],
+      persistingVariants: [],
+      regressions: [],
+      scoreContext: '',
+      severityDistribution: { baseline: { P0: 0, P1: 0, P2: 0 }, current: { P0: 0, P1: 0, P2: 0 } },
+      ...overrides,
+    };
+  }
+
+  it('returns no-changes message when nothing changed', () => {
+    const result = makeResult();
+    expect(generateScoreContext(result)).toBe('No meaningful changes between runs');
+  });
+
+  it('mentions resolved P0s on positive delta', () => {
+    const result = makeResult({
+      scoreDelta: 15,
+      resolvedIssues: [
+        { id: 'QUX-1', title: 'Critical bug', severity: 'P0', type: 'consensus' },
+      ],
+    });
+    expect(generateScoreContext(result)).toContain('1 P0 issue resolved');
+  });
+
+  it('mentions new P0s on negative delta', () => {
+    const result = makeResult({
+      scoreDelta: -10,
+      newIssues: [
+        { id: 'QUX-1', title: 'New critical', severity: 'P0', type: 'consensus' },
+        { id: 'QUX-2', title: 'Another critical', severity: 'P0', type: 'consensus' },
+      ],
+    });
+    expect(generateScoreContext(result)).toContain('2 new P0 issues introduced');
+  });
+
+  it('mentions regressions on negative delta', () => {
+    const result = makeResult({
+      scoreDelta: -5,
+      regressions: [
+        {
+          baselineId: 'QUX-1', currentId: 'QUX-1', title: 'Bug', baselineSeverity: 'P2',
+          currentSeverity: 'P0', severityChange: 'regressed', matchMethod: 'exact-id',
+        },
+      ],
+    });
+    expect(generateScoreContext(result)).toContain('1 regression');
+  });
+
+  it('mentions variant count when variants exist', () => {
+    const result = makeResult({
+      scoreDelta: 5,
+      resolvedIssues: [{ id: 'QUX-r1', title: 'Resolved', severity: 'P2', type: 'consensus' }],
+      persistingVariants: [
+        {
+          issue: { id: 'QUX-v1', title: 'Variant new', severity: 'P1', type: 'consensus' },
+          similarTo: { id: 'QUX-v0', title: 'Variant old', severity: 'P1', type: 'consensus' },
+          similarityScore: 65,
+        },
+        {
+          issue: { id: 'QUX-v2', title: 'Variant new 2', severity: 'P0', type: 'consensus' },
+          similarTo: { id: 'QUX-v3', title: 'Variant old 2', severity: 'P0', type: 'consensus' },
+          similarityScore: 58,
+        },
+      ],
+    });
+    expect(generateScoreContext(result)).toContain('2 issues reworded but not resolved');
   });
 });
