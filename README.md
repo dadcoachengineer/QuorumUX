@@ -109,7 +109,7 @@ Commands:
   init                          Interactive project setup wizard
   run [options]                 Run the analysis pipeline (default)
   status                        Show project config, API key, and latest run info
-  compare [--json] <baseline> <current>  Compare two runs side-by-side
+  compare [options] <baseline> <current>  Compare two runs (variants, regressions, score context)
 
 Options:
   --config <path>      Path to quorumux.config.ts (default: ./quorumux.config.ts)
@@ -120,6 +120,10 @@ Options:
   --output-dir <path>  Write reports to this directory instead of {runDir}/reports/
   --verbose            Verbose output
   --help               Show help
+
+Compare options:
+  --json               Output comparison as JSON to stdout
+  --variant-threshold <0-1>  Similarity threshold for variant detection (default: 0.35)
 
 Environment:
   OPENROUTER_API_KEY   API key for OpenRouter (preferred).
