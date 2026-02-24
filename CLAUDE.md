@@ -107,8 +107,8 @@ Importing the package for types does **not** trigger the CLI — `index.ts` has 
 - **npm package**: `quorum-ux` (hyphenated, for npm).
 - **Config file**: `quorumux.config.ts`
 - **Global config dir**: `~/.quorumux/`
-- **Published on npm** as `quorum-ux@0.4.2`.
-- **Test suite**: vitest, 139 unit tests across 9 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, `compareSyntheses`, `jaccardSimilarity`, `matchIssues`, `normalizeTitle`, `generateScoreContext`, `generateStableId`, `normalizeScore`, `calculateAdjustedScore`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
+- **Published on npm** as `quorum-ux@0.4.3`.
+- **Test suite**: vitest, 141 unit tests across 9 files. Tests cover all pure functions (`parseArgs`, `validateConfig`, `redactApiKey`, `compareSyntheses`, `jaccardSimilarity`, `matchIssues`, `normalizeTitle`, `generateScoreContext`, `generateStableId`, `normalizeScore`, `calculateAdjustedScore`, archetypes, persona bundles, cost tracking, file utilities). Test files live next to source (`*.test.ts`) and are excluded from the build via `tsconfig.json`.
 - **Module system**: tsconfig uses `module: "NodeNext"` / `moduleResolution: "NodeNext"`. All relative imports in `.ts` source must use `.js` extensions (e.g., `from './types.js'`). TS resolves them to `.ts` at compile time but emits them as-is for Node ESM.
 - **CI**: GitHub Actions runs on push to `main` and PRs — test (Node 18/20/22 matrix), typecheck, and build (with dist test-file leak check).
 - **Stage outputs** go in `{runDir}/reports/` — not the project root. Override with `--output-dir`.

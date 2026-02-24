@@ -20,6 +20,12 @@ import * as path from 'path';
 import { fileURLToPath } from 'node:url';
 import { QuorumUXConfig, PipelineOptions } from './types.js';
 
+// Read package version once at module load
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PKG_VERSION: string = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf-8')
+).version;
+
 // Public type re-exports for consumers of the npm package
 export type { QuorumUXConfig, ModelConfig, ModelSpec, VideoConfig, PersonaArchetype } from './types.js';
 import * as logger from './utils/logger.js';
@@ -73,6 +79,11 @@ async function runPipeline(args: string[]): Promise<void> {
 
     if (options.help) {
       printHelp();
+      process.exit(0);
+    }
+
+    if (options.version) {
+      console.log(`quorum-ux@${PKG_VERSION}`);
       process.exit(0);
     }
 
@@ -290,7 +301,7 @@ function dryRun(config: QuorumUXConfig, runDir: string, options: PipelineOptions
 /**
  * Parse command-line arguments
  */
-export function parseArgs(args: string[]): PipelineOptions & { help?: boolean } {
+export function parseArgs(args: string[]): PipelineOptions & { help?: boolean; version?: boolean } {
   const options: any = {
     config: './quorumux.config.ts',
   };
@@ -300,6 +311,8 @@ export function parseArgs(args: string[]): PipelineOptions & { help?: boolean } 
 
     if (arg === '--help') {
       options.help = true;
+    } else if (arg === '--version' || arg === '-v') {
+      options.version = true;
     } else if (arg === '--config') {
       options.config = args[++i];
     } else if (arg === '--run-dir') {
@@ -460,6 +473,7 @@ OPTIONS (for run)
   --output-dir <path>  Write reports to this directory instead of {runDir}/reports/
   --verbose            Verbose logging
   --help               Show this help message
+  --version, -v        Print version and exit
 
 ENVIRONMENT
   OPENROUTER_API_KEY  API key for OpenRouter (preferred).
