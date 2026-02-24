@@ -94,11 +94,12 @@ const SYNONYM_MAP: Record<string, string> = {
 };
 
 /**
- * Normalize an issue title for comparison: strip severity prefixes,
+ * Normalize an issue title for comparison: strip bracket tags,
  * remove filler adverbs, normalize synonyms, collapse whitespace.
  */
 export function normalizeTitle(title: string): string {
-  let t = title.replace(/^\s*\[?P[012]\]?\s*[:—-]?\s*/i, '');
+  let t = title.replace(/\[[^\]]*\]/g, '');
+  t = t.replace(/^\s*P[012]\s*[:—-]?\s*/i, '');
   t = t.toLowerCase();
   const words = t.split(/\s+/).filter(Boolean);
   const normalized = words
