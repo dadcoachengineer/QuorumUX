@@ -57,6 +57,14 @@ describe('parseArgs', () => {
     expect(() => parseArgs(['--start-stage', 'abc'])).toThrow('--start-stage must be 1, 2, 3, or 4');
   });
 
+  it('parses --version', () => {
+    expect(parseArgs(['--version']).version).toBe(true);
+  });
+
+  it('parses -v', () => {
+    expect(parseArgs(['-v']).version).toBe(true);
+  });
+
   it('throws on unknown option', () => {
     expect(() => parseArgs(['--bogus'])).toThrow('Unknown option: --bogus');
   });
