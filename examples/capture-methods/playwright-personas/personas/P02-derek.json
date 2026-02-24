@@ -1,0 +1,87 @@
+{
+  "id": "P02-derek",
+  "name": "Derek Liu",
+  "email": "testuser+P02-derek@example.com",
+  "description": "The Skeptic — Minimal engagement, low-effort value discovery, abandons mid-flow. Tests how the app handles partial completion and feature gating when values are incomplete.",
+  "phases": [
+    {
+      "name": "Desktop — Skeptic Minimal Engagement",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-skeptic",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "value-discovery-ai",
+          "label": "values-low-effort",
+          "criticalPath": false,
+          "params": {
+            "messages": [
+              "leadership I guess",
+              "winning",
+              "I don't know, results?"
+            ],
+            "expectCompletion": false
+          }
+        },
+        {
+          "type": "navigate-url",
+          "label": "abandon-discovery-to-settings",
+          "criticalPath": false,
+          "params": { "url": "/settings" }
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-to-dashboard",
+          "criticalPath": false,
+          "params": { "url": "/dashboard" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "check-draft-state",
+          "criticalPath": false,
+          "params": { "assertText": "draft", "caseSensitive": false }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-tab",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "goals-locked-check",
+          "criticalPath": false,
+          "params": { "assertText": "goals locked", "checkGating": true }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-habits-tab",
+          "criticalPath": false,
+          "params": { "tab": "habits" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "habits-empty-check",
+          "criticalPath": false,
+          "params": { "assertText": "habits empty", "checkEmpty": true }
+        },
+        {
+          "type": "coach-panel",
+          "label": "open-coach-panel-skeptic",
+          "criticalPath": false,
+          "params": { "action": "open" }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Derek might not return — but not because of bugs. The app correctly gates features behind values, which a skeptic may not complete.",
+    "retentionBad": "Derek would abandon the app — critical failures would confirm his skepticism.",
+    "retentionMixed": "Derek would leave neutral — no blockers, but nothing grabbed his attention either.",
+    "topDelight": "Feature gating prevents Derek from getting into a broken state — he may not love it, but it keeps things honest."
+  }
+}

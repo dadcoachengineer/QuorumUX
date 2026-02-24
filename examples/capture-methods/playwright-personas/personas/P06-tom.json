@@ -1,0 +1,140 @@
+{
+  "id": "P06-tom",
+  "name": "Tom Brennan",
+  "email": "testuser+P06-tom@example.com",
+  "description": "The Returning User — Tests Day 1 setup + Day 2 return to simulate retention. Checks data persistence, habit resets, streak counters, coach bar evolution, and retention signals across sessions.",
+  "phases": [
+    {
+      "name": "Desktop — Day 1 Setup",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-day1",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-moderate",
+          "criticalPath": true,
+          "params": {
+            "ratings": [4, 5, 3, 4, 5, 3, 4, 5, 4, 3, 5, 4, 3, 5, 4]
+          }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-day1",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-10k-race",
+          "criticalPath": true,
+          "params": {
+            "title": "Run my first 10K race",
+            "category": "Experience",
+            "description": "Train for and complete a 10K road race within the next 3 months"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-run-3mi",
+          "criticalPath": false,
+          "params": {
+            "name": "Run 3 miles",
+            "goalLabel": "goal-10k-race"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-stretching",
+          "criticalPath": false,
+          "params": {
+            "name": "Do 10 minutes of stretching",
+            "goalLabel": "goal-10k-race"
+          }
+        },
+        {
+          "type": "check-habits",
+          "label": "check-habits-day1",
+          "criticalPath": false,
+          "params": { "expectedCount": 2, "completeAll": true }
+        },
+        {
+          "type": "coach-bar-check",
+          "label": "coach-bar-day1",
+          "criticalPath": false,
+          "params": { "flowScore": "Coach Bar Day 1" }
+        },
+        {
+          "type": "logout",
+          "label": "logout-day1",
+          "criticalPath": false,
+          "params": {}
+        }
+      ]
+    },
+    {
+      "name": "Desktop — Day 2 Return",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-day2",
+          "criticalPath": true,
+          "params": { "flowScore": "Day 2 Login" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "dashboard-content-check",
+          "criticalPath": false,
+          "params": {
+            "assertPresent": ["10K", "Run 3", "stretching"],
+            "caseSensitive": false,
+            "flowScore": "Day 2 Dashboard"
+          }
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-home-day2",
+          "criticalPath": false,
+          "params": { "url": "/" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "streak-counter-check",
+          "criticalPath": false,
+          "params": {
+            "assertRegex": "(\\d+)[\\s-]*day\\s*streak",
+            "caseSensitive": false,
+            "flowScore": "Streak Counter"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "weekly-summary-check",
+          "criticalPath": false,
+          "params": {
+            "assertPresent": ["this week", "weekly"],
+            "caseSensitive": false,
+            "flowScore": "Weekly Summary"
+          }
+        },
+        {
+          "type": "coach-bar-check",
+          "label": "coach-bar-day2",
+          "criticalPath": false,
+          "params": { "flowScore": "Coach Bar Day 2" }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Tom would come back tomorrow — the streak counter and fresh habits create a daily pull. The question is whether week 2 has enough variety.",
+    "retentionBad": "Tom would not come back — if his day 2 experience feels broken or empty, he'll assume the app is not for him.",
+    "retentionMixed": "Tom might come back once more — but without clear progress signals, the habit fades fast.",
+    "topDelight": "Streak counter and daily habit reset create a game-like daily loop that rewards consistency."
+  }
+}

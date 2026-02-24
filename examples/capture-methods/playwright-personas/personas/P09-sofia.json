@@ -1,0 +1,119 @@
+{
+  "id": "P09-sofia",
+  "name": "Sofia Reyes",
+  "email": "testuser+P09-sofia@example.com",
+  "description": "The Security Tester — Adversarial input testing with XSS, SQL injection, oversized text, script tags, emoji payloads, double-click submit, and protected route checks. Tests how the app handles malicious and edge-case input.",
+  "phases": [
+    {
+      "name": "Desktop — Security & Adversarial Testing",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-security",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-fast",
+          "criticalPath": true,
+          "params": { "rating": 3 }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-security",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "adversarial-input",
+          "label": "xss-injection",
+          "criticalPath": false,
+          "params": {
+            "inputType": "xss",
+            "target": "goal",
+            "flowScore": "XSS Protection",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "adversarial-input",
+          "label": "sql-injection",
+          "criticalPath": false,
+          "params": {
+            "inputType": "sql-injection",
+            "target": "goal",
+            "flowScore": "SQL Injection Protection",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "adversarial-input",
+          "label": "emoji-payload",
+          "criticalPath": false,
+          "params": {
+            "inputType": "emoji",
+            "target": "goal",
+            "flowScore": "Input Validation",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "adversarial-input",
+          "label": "oversized-input",
+          "criticalPath": false,
+          "params": {
+            "inputType": "oversized",
+            "target": "goal",
+            "flowScore": "Input Validation",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "adversarial-input",
+          "label": "script-tag-injection",
+          "criticalPath": false,
+          "params": {
+            "inputType": "script-tag",
+            "target": "goal",
+            "flowScore": "XSS Protection",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "double-click-guard",
+          "label": "double-click-submit",
+          "criticalPath": false,
+          "params": {
+            "title": "Double-click test goal",
+            "flowScore": "Double-Click Protection",
+            "issueCategory": "Security"
+          }
+        },
+        {
+          "type": "logout",
+          "label": "logout-for-route-check",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "protected-route-check",
+          "label": "protected-routes",
+          "criticalPath": false,
+          "params": {
+            "routes": ["/home", "/dashboard", "/settings", "/network", "/admin"],
+            "flowScore": "Route Protection",
+            "issueCategory": "Security"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Sofia is not a real user — she's a security tester. The app handles adversarial input gracefully.",
+    "retentionBad": "The app does not survive adversarial testing — critical security vulnerabilities found.",
+    "retentionMixed": "The app mostly survives but has some input validation gaps that should be addressed.",
+    "topDelight": "React's default escaping handles most XSS vectors automatically — the framework choice provides baseline security."
+  }
+}
