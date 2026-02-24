@@ -1,0 +1,14 @@
+{
+  "name": "lifecycle-test",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "tsx runner.ts"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}

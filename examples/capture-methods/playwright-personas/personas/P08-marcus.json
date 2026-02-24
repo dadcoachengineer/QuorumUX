@@ -1,0 +1,99 @@
+{
+  "id": "P08-marcus",
+  "name": "Marcus Chen",
+  "email": "testuser+P08-marcus@example.com",
+  "description": "The Accessibility Tester — Keyboard-only navigation through the full user flow. Tests tab order, focus indicators, ARIA labels, color contrast, hit target sizes, and focus trapping in modals.",
+  "phases": [
+    {
+      "name": "Desktop — Keyboard Accessibility Audit",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "keyboard-navigation",
+          "label": "keyboard-login",
+          "criticalPath": true,
+          "params": {
+            "target": "login",
+            "maxTabs": 20,
+            "flowScore": "Login A11y",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-keyboard",
+          "criticalPath": true,
+          "params": {
+            "rating": 4,
+            "flowScore": "Quick Assessment A11y",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-keyboard",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-public-speaking",
+          "criticalPath": false,
+          "params": {
+            "title": "Improve public speaking skills",
+            "category": "Education",
+            "description": "Build confidence and technique for conference presentations",
+            "flowScore": "Goal Creation A11y",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "keyboard-navigation",
+          "label": "focus-trap-test",
+          "criticalPath": false,
+          "params": {
+            "target": "focus-trap",
+            "flowScore": "Coach Panel A11y",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "keyboard-navigation",
+          "label": "aria-audit",
+          "criticalPath": false,
+          "params": {
+            "target": "aria-audit",
+            "flowScore": "ARIA Labels",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "keyboard-navigation",
+          "label": "hit-targets-audit",
+          "criticalPath": false,
+          "params": {
+            "target": "hit-targets",
+            "flowScore": "Hit Targets",
+            "issueCategory": "Accessibility"
+          }
+        },
+        {
+          "type": "keyboard-navigation",
+          "label": "contrast-audit",
+          "criticalPath": false,
+          "params": {
+            "target": "contrast-audit",
+            "flowScore": "Color Contrast",
+            "issueCategory": "Accessibility"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Marcus can use the app — the core flow is keyboard accessible. Minor gaps in focus indicators or ARIA labels could be fixed.",
+    "retentionBad": "Marcus cannot use the app — critical accessibility failures block keyboard-only users entirely.",
+    "retentionMixed": "Marcus could use the app with difficulty — several flows require mouse interaction or have invisible focus states.",
+    "topDelight": "Cmd/K shortcut for coach panel is a keyboard-first design pattern — exactly what power keyboard users expect."
+  }
+}

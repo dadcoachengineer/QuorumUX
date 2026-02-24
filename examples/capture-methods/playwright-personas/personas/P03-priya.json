@@ -1,0 +1,196 @@
+{
+  "id": "P03-priya",
+  "name": "Priya Kapoor",
+  "email": "testuser+P03-priya@example.com",
+  "description": "The Overachiever — Stress test with 5 goals and 15 habits. Uses Quick Assessment instead of AI discovery. Tests UI scaling, scroll performance, and coach panel quick-start with heavy data load.",
+  "phases": [
+    {
+      "name": "Desktop — Power User Stress Test",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-overachiever",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-all-high",
+          "criticalPath": true,
+          "params": { "rating": 5 }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-pmp-cert",
+          "criticalPath": true,
+          "params": {
+            "title": "Earn PMP certification",
+            "category": "Education",
+            "description": "Pass the PMP exam within 6 months to formalize project management expertise"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-cross-functional-launch",
+          "criticalPath": true,
+          "params": {
+            "title": "Lead cross-functional product launch",
+            "category": "Experience",
+            "description": "Own end-to-end delivery of Q3 product launch across engineering, design, and marketing"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-shadow-vp",
+          "criticalPath": true,
+          "params": {
+            "title": "Shadow VP of Product for one quarter",
+            "category": "Exposure",
+            "description": "Gain executive-level perspective by shadowing VP through strategic planning cycle"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-data-analytics",
+          "criticalPath": true,
+          "params": {
+            "title": "Complete advanced data analytics program",
+            "category": "Education",
+            "description": "Master SQL, Python analytics, and data visualization for product decision-making"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-mentor-juniors",
+          "criticalPath": true,
+          "params": {
+            "title": "Mentor two junior PMs through their first launches",
+            "category": "Experience",
+            "description": "Develop leadership skills by guiding junior PMs through complete product cycles"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-pmp-flashcards",
+          "criticalPath": false,
+          "params": { "name": "Study PMP flashcards for 15 minutes", "goalLabel": "goal-pmp-cert" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-pmp-quiz",
+          "criticalPath": false,
+          "params": { "name": "Take one PMP practice quiz", "goalLabel": "goal-pmp-cert" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-pmbok-chapter",
+          "criticalPath": false,
+          "params": { "name": "Read one PMBOK chapter", "goalLabel": "goal-pmp-cert" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-standup-write",
+          "criticalPath": false,
+          "params": { "name": "Write standup notes with blockers", "goalLabel": "goal-cross-functional-launch" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-review-metrics",
+          "criticalPath": false,
+          "params": { "name": "Review launch metrics dashboard", "goalLabel": "goal-cross-functional-launch" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-risk-register",
+          "criticalPath": false,
+          "params": { "name": "Update risk register", "goalLabel": "goal-cross-functional-launch" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-vp-journal",
+          "criticalPath": false,
+          "params": { "name": "Journal VP observation notes", "goalLabel": "goal-shadow-vp" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-exec-meeting",
+          "criticalPath": false,
+          "params": { "name": "Attend one exec meeting", "goalLabel": "goal-shadow-vp" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-network-leader",
+          "criticalPath": false,
+          "params": { "name": "Network with one senior leader", "goalLabel": "goal-shadow-vp" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-analytics-module",
+          "criticalPath": false,
+          "params": { "name": "Complete one analytics course module", "goalLabel": "goal-data-analytics" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-practice-sql",
+          "criticalPath": false,
+          "params": { "name": "Practice SQL queries for 20 minutes", "goalLabel": "goal-data-analytics" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-data-case-study",
+          "criticalPath": false,
+          "params": { "name": "Read one data-driven case study", "goalLabel": "goal-data-analytics" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-mentee-a",
+          "criticalPath": false,
+          "params": { "name": "1:1 with mentee A", "goalLabel": "goal-mentor-juniors" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-mentee-b",
+          "criticalPath": false,
+          "params": { "name": "1:1 with mentee B", "goalLabel": "goal-mentor-juniors" }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-mentoring-reflect",
+          "criticalPath": false,
+          "params": { "name": "Reflect on mentoring sessions", "goalLabel": "goal-mentor-juniors" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "scroll-check-all-habits",
+          "criticalPath": false,
+          "params": { "assertText": "all habits visible", "checkScroll": true, "expectedCount": 15 }
+        },
+        {
+          "type": "check-habits",
+          "label": "check-habits-bulk",
+          "criticalPath": false,
+          "params": { "expectedCount": 15 }
+        },
+        {
+          "type": "coach-panel",
+          "label": "coach-panel-quick-start",
+          "criticalPath": false,
+          "params": { "action": "open", "quickStart": true }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Priya would thrive — the app handles power users and she can track everything she needs.",
+    "retentionBad": "Priya would be frustrated — she expects tools to keep up with her pace, and failures here break trust.",
+    "retentionMixed": "Priya would use it but hit friction — the UI may not scale well for power users.",
+    "topDelight": "The 3E framework speaks to Priya — she can track Education, Exposure, and Experience goals simultaneously."
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "id": "P01-maria",
+  "name": "Maria Santos",
+  "email": "testuser+P01-maria@example.com",
+  "description": "The Career Changer — Happy path through the full user journey. Marketing professional pivoting to UX Research at 34. Tests value discovery AI depth, 3E goal creation, habit tracking, coach features, and mobile responsiveness.",
+  "phases": [
+    {
+      "name": "Desktop — Full Career Changer Journey",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-desktop",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "value-discovery-ai",
+          "label": "values-career-change-discovery",
+          "criticalPath": true,
+          "params": {
+            "messages": [
+              "I've been in marketing for 8 years and I'm really good at it, but I've been feeling this growing disconnect between what I do and what actually matters to me. I spend all day optimizing campaigns but I never talk to the actual humans using our products.",
+              "What really lights me up is understanding people — why they make decisions, what frustrates them, what they didn't even know they needed. I've been doing user interviews informally on the side of my marketing work and those are the best hours of my week.",
+              "I think I value impact and human connection more than achievement. My marketing awards don't mean anything to me anymore, but when I helped a PM redesign an onboarding flow based on interviews I did? That kept me energized for weeks.",
+              "I'm terrified of starting over at 34. I have a mortgage. What if UX Research isn't what I think it is? What if I romanticized it?"
+            ]
+          }
+        },
+        {
+          "type": "save-values",
+          "label": "save-discovered-values",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-ux-certification",
+          "criticalPath": true,
+          "params": {
+            "title": "Complete Google UX Design Certificate",
+            "category": "Education",
+            "description": "Earn the Google UX Design Professional Certificate on Coursera to build foundational UX skills"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-informational-interviews",
+          "criticalPath": true,
+          "params": {
+            "title": "Conduct 10 informational interviews with UX researchers",
+            "category": "Exposure",
+            "description": "Connect with working UX researchers to understand day-to-day realities and career paths"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-pro-bono-ux-project",
+          "criticalPath": true,
+          "params": {
+            "title": "Complete a pro-bono UX research project for a nonprofit",
+            "category": "Experience",
+            "description": "Apply UX research methods end-to-end on a real project to build portfolio evidence"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-ux-coursework",
+          "criticalPath": false,
+          "params": {
+            "name": "Complete one UX course module",
+            "goalLabel": "goal-ux-certification"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-networking-outreach",
+          "criticalPath": false,
+          "params": {
+            "name": "Send one LinkedIn outreach message to a UX researcher",
+            "goalLabel": "goal-informational-interviews"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-ux-reading",
+          "criticalPath": false,
+          "params": {
+            "name": "Read 20 minutes of UX research methodology",
+            "goalLabel": "goal-pro-bono-ux-project"
+          }
+        },
+        {
+          "type": "check-habits",
+          "label": "check-habits-created",
+          "criticalPath": false,
+          "params": { "expectedCount": 3 }
+        },
+        {
+          "type": "coach-bar-check",
+          "label": "coach-bar-visible",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "coach-panel",
+          "label": "open-coach-panel",
+          "criticalPath": false,
+          "params": { "action": "open" }
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-to-network",
+          "criticalPath": false,
+          "params": { "url": "/network" }
+        },
+        {
+          "type": "network-page-check",
+          "label": "network-page-loads",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "settings-check",
+          "label": "settings-page-check",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "enhanced-coaching-opt-in",
+          "label": "opt-in-enhanced-coaching",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-to-settings-resume",
+          "criticalPath": false,
+          "params": { "url": "/settings" }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "resume-section-visible",
+          "criticalPath": false,
+          "params": { "assertText": "resume", "caseSensitive": false }
+        },
+        {
+          "type": "logout",
+          "label": "logout-desktop",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "login",
+          "label": "re-login-desktop",
+          "criticalPath": true,
+          "params": {}
+        }
+      ]
+    },
+    {
+      "name": "Mobile — Responsive Check",
+      "viewport": "mobile",
+      "steps": [
+        {
+          "type": "navigate-url",
+          "label": "nav-home-mobile",
+          "criticalPath": false,
+          "params": { "url": "/" }
+        },
+        {
+          "type": "login",
+          "label": "login-mobile",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "mobile-home-viewport",
+          "criticalPath": false,
+          "params": { "checks": ["overflow", "touchTargets"] }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "tabs-visible-mobile",
+          "criticalPath": false,
+          "params": { "assertText": "tabs visible", "checkVisibility": true }
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-settings-mobile",
+          "criticalPath": false,
+          "params": { "url": "/settings" }
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "mobile-settings-viewport",
+          "criticalPath": false,
+          "params": { "checks": ["overflow", "buttonSizes"] }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Maria would likely return — the core flow works and she can track progress toward her UX Research career change.",
+    "retentionBad": "Maria might not return — critical failures in the flow would block her progress.",
+    "retentionMixed": "Maria would probably return but with reservations — friction points could cause dropoff over time.",
+    "topDelight": "Value discovery AI conversation provides a meaningful, personalized experience for career changers"
+  }
+}

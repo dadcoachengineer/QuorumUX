@@ -1,0 +1,142 @@
+{
+  "id": "P07-rachel",
+  "name": "Rachel Kim",
+  "email": "testuser+P07-rachel@example.com",
+  "description": "The B2B Evaluator — Enterprise buyer evaluating for her VP. Checks team features, privacy controls, legal docs, security, SSO/SAML, and compiles a VP objections list for go/no-go decision.",
+  "phases": [
+    {
+      "name": "Desktop — Enterprise Evaluation",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-evaluator",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-evaluative",
+          "criticalPath": true,
+          "params": {
+            "ratings": [3, 4, 3, 4, 4, 3, 4, 4, 3, 4, 3, 3, 4, 3, 4]
+          }
+        },
+        {
+          "type": "settings-check",
+          "label": "enterprise-features-check",
+          "criticalPath": false,
+          "params": {
+            "assertPresent": ["Team", "SSO", "Billing"],
+            "flowScore": "Enterprise Features",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "privacy-controls-check",
+          "criticalPath": false,
+          "params": {
+            "url": "/settings",
+            "assertPresent": ["Privacy", "Delete Account", "Enhanced AI Coaching"],
+            "caseSensitive": false,
+            "flowScore": "Privacy Controls",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "coaching-consent-language",
+          "criticalPath": false,
+          "params": {
+            "url": "/settings",
+            "assertPresent": ["personalized", "past conversations"],
+            "caseSensitive": false,
+            "flowScore": "Coaching Consent",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "data-export-check",
+          "criticalPath": false,
+          "params": {
+            "url": "/settings",
+            "assertPresent": ["Export", "Download", "GDPR", "Data Request"],
+            "caseSensitive": false,
+            "matchAny": true,
+            "flowScore": "Data Export",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "legal-page-check",
+          "label": "legal-privacy-policy",
+          "criticalPath": false,
+          "params": {
+            "routes": [
+              { "url": "/privacy", "expected": ["Privacy Policy", "Retention", "Third Party"] },
+              { "url": "/privacy/b2b", "expected": ["B2B Privacy"] },
+              { "url": "/dpa", "expected": ["Data Processing"] }
+            ],
+            "flowScore": "Legal Documentation",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "team-terms-check",
+          "criticalPath": false,
+          "params": {
+            "url": "/terms/teams",
+            "assertPresent": ["Team", "seat", "data ownership"],
+            "caseSensitive": false,
+            "flowScore": "Team Terms",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "security-assessment",
+          "criticalPath": false,
+          "params": {
+            "checkProtocol": "https",
+            "assertPresent": ["MFA", "2FA", "two-factor", "multi-factor"],
+            "caseSensitive": false,
+            "matchAny": true,
+            "flowScore": "Security",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "page-content-assert",
+          "label": "pricing-page-check",
+          "criticalPath": false,
+          "params": {
+            "url": "/welcome",
+            "assertPresent": ["$", "Team", "Trial", "Beta"],
+            "caseSensitive": false,
+            "matchAny": true,
+            "flowScore": "Pricing Transparency",
+            "issueCategory": "B2B"
+          }
+        },
+        {
+          "type": "network-page-check",
+          "label": "network-team-features",
+          "criticalPath": false,
+          "params": {
+            "flowScore": "Network Features",
+            "issueCategory": "B2B"
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Rachel would shortlist MomentumEQ — the privacy controls and legal documentation meet baseline enterprise requirements. She would want a demo with the team features.",
+    "retentionBad": "Rachel would pass — critical gaps in enterprise readiness would be a dealbreaker for her VP.",
+    "retentionMixed": "Rachel would bookmark but not champion — too much friction to build an internal business case.",
+    "topDelight": "B2B privacy addendum and DPA demonstrate enterprise awareness — rare for a startup at this stage."
+  }
+}

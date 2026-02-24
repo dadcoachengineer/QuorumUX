@@ -195,6 +195,8 @@ QuorumUX is test-runner agnostic. It consumes artifacts, not test code. Any runn
 
 The optional `summaries/*.json` files give QuorumUX additional context (pass/fail counts, known issues) but aren't required. Without them, analysis is purely visual.
 
+See [`examples/capture-methods/`](examples/capture-methods/) for reference implementations showing how to produce artifacts in the expected format. The [Playwright Personas](examples/capture-methods/playwright-personas/) method demonstrates declarative persona-based journeys with video, screenshots, and structured verdicts.
+
 ## Cost
 
 Typical cost for a 10-persona run via OpenRouter:

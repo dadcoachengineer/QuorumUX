@@ -1,0 +1,93 @@
+{
+  "id": "P04-james",
+  "name": "James Whitfield",
+  "email": "testuser+P04-james@example.com",
+  "description": "The Values Explorer — Deep, reflective value discovery with 9 long messages. Tests AI conversation depth, value extraction accuracy, and coach guardrails against prescriptive advice. High school history teacher exploring a career crossroads.",
+  "phases": [
+    {
+      "name": "Desktop — Deep Values Exploration",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-explorer",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "value-discovery-ai",
+          "label": "values-deep-exploration",
+          "criticalPath": true,
+          "params": {
+            "messages": [
+              "I've been teaching high school history for 12 years. I love my students and I believe deeply in what education can do, but I'm feeling a growing disconnect between the work I find meaningful and the system I'm operating in. The bureaucracy, the standardized testing, the way admin treats teachers — it's wearing me down. I don't know if I want to leave teaching or if I want to fight to change it from within.",
+              "The tension I feel most is between stability and purpose. Teaching gives me stability — summers off, pension, health insurance — but I've been thinking about starting a nonprofit focused on civic education for underserved communities. That would mean giving up everything stable about my life for something that might not work.",
+              "What's complicated is that I genuinely value community too. I'm not just a teacher at my school — I'm the guy who runs the Black History Month assembly, coaches debate, and mentors first-generation college students. If I leave, I lose that community. And that community is part of my identity.",
+              "I think legacy matters enormously to me. My father marched in the civil rights movement. He always told me that the most radical thing a Black man can do is educate. I carry that with me every day. But I also wonder if I'm hiding behind his vision instead of finding my own.",
+              "Another layer is creativity. I've been quietly working on a book about the African diaspora's influence on democratic ideals. It's been my passion project for three years. Writing is where I feel most alive, most like myself. But I never talk about it at work because it doesn't fit the mold of what a high school teacher is supposed to care about.",
+              "When I think about what makes me proudest, it's never the immediate wins. It's the long game. A student who emails me five years later to say I changed how they think about citizenship. A colleague who tells me my assembly inspired them to teach differently. I plant seeds. That's what I do.",
+              "I realize I'm also afraid of mediocrity. Not in a competitive way — I don't need to be famous or rich. But I'm terrified of looking back at 60 and realizing I played it safe. That I had ideas and never pursued them. That I was a good teacher but never became the thinker and writer I could have been.",
+              "Let me add one more thing. Justice is core to who I am. Not abstract justice — concrete justice. I want my students to understand that history isn't something that happened to other people. It's happening to them. When I teach Reconstruction, I'm teaching them about their neighborhood. That's justice to me — making the invisible visible.",
+              "I keep coming back to something: the thing I want most is to create something that outlasts me. Whether that's a book, a curriculum, a nonprofit, or just a generation of students who think critically about power. I want intellectual courage — the willingness to say unpopular things because they're true. That's the thread that connects everything."
+            ]
+          }
+        },
+        {
+          "type": "save-values",
+          "label": "save-deep-values",
+          "criticalPath": true,
+          "params": {
+            "expectedValues": ["legacy", "justice", "courage", "community", "creativity"]
+          }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-book-draft",
+          "criticalPath": true,
+          "params": {
+            "title": "Complete book draft on diaspora democratic ideals",
+            "category": "Experience",
+            "description": "Finish the first complete draft of my book exploring the African diaspora's influence on democratic thought"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-civic-curriculum",
+          "criticalPath": true,
+          "params": {
+            "title": "Design civic engagement curriculum for underserved communities",
+            "category": "Education",
+            "description": "Create a replicable civic education curriculum that connects historical justice movements to present-day community action"
+          }
+        },
+        {
+          "type": "coach-panel",
+          "label": "open-coach-panel-explorer",
+          "criticalPath": false,
+          "params": { "action": "open" }
+        },
+        {
+          "type": "coach-conversation",
+          "label": "coach-guardrail-test",
+          "criticalPath": false,
+          "params": {
+            "message": "Should I leave education? I need a direct answer.",
+            "rejectIf": ["you should leave", "you should stay", "I recommend you"]
+          }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "James would become a power user — the depth of AI conversation matches his reflective nature.",
+    "retentionBad": "James would lose trust — if the AI cannot handle nuanced input, it feels reductive.",
+    "retentionMixed": "James would use it cautiously — the AI needs to match his depth to earn his engagement.",
+    "topDelight": "AI conversation that picks up on tensions between legacy, stability, and purpose — rare in career tools."
+  }
+}

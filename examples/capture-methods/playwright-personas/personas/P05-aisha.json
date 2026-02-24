@@ -1,0 +1,113 @@
+{
+  "id": "P05-aisha",
+  "name": "Aisha Thompson",
+  "email": "testuser+P05-aisha@example.com",
+  "description": "The Mobile-Only User — Tests the entire core flow at 375px viewport. Quick Assessment, single goal/habit creation, coach bar, network, and settings. Validates touch targets, overflow, and button sizes across all key pages.",
+  "phases": [
+    {
+      "name": "Mobile — Full Mobile-Only Journey (375px)",
+      "viewport": "mobile",
+      "steps": [
+        {
+          "type": "navigate-url",
+          "label": "nav-home-mobile",
+          "criticalPath": false,
+          "params": { "url": "/" }
+        },
+        {
+          "type": "login",
+          "label": "login-mobile",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "home-viewport-check",
+          "criticalPath": true,
+          "params": { "checks": ["overflow", "touchTargets"] }
+        },
+        {
+          "type": "quick-assessment",
+          "label": "quick-assessment-mobile",
+          "criticalPath": true,
+          "params": {
+            "ratings": [5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5, 4, 5]
+          }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-mobile",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "goals-tab-overflow-check",
+          "criticalPath": false,
+          "params": { "checks": ["tabOverflow"] }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-data-viz",
+          "criticalPath": true,
+          "params": {
+            "title": "Learn advanced data visualization",
+            "category": "Education",
+            "description": "Master D3.js and advanced charting techniques for data storytelling"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-data-viz-practice",
+          "criticalPath": false,
+          "params": {
+            "name": "Practice data visualization for 20 min",
+            "goalLabel": "goal-data-viz"
+          }
+        },
+        {
+          "type": "check-habits",
+          "label": "check-habits-mobile",
+          "criticalPath": false,
+          "params": { "expectedCount": 1 }
+        },
+        {
+          "type": "coach-bar-check",
+          "label": "coach-bar-mobile",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-to-network-mobile",
+          "criticalPath": false,
+          "params": { "url": "/network" }
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "network-viewport-check",
+          "criticalPath": false,
+          "params": { "checks": ["overflow"] }
+        },
+        {
+          "type": "navigate-url",
+          "label": "nav-to-settings-mobile",
+          "criticalPath": false,
+          "params": { "url": "/settings" }
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "settings-viewport-check",
+          "criticalPath": false,
+          "params": { "checks": ["overflow", "buttonSizes"] }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Aisha would use this daily on her commute — the mobile experience handles the core flow well.",
+    "retentionBad": "Aisha would delete the bookmark — mobile-critical users have zero tolerance for broken flows.",
+    "retentionMixed": "Aisha would try a few times but drift — small friction adds up on mobile.",
+    "topDelight": "Quick Assessment is perfectly suited for mobile — 15 taps and done."
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "id": "P10-linda",
+  "name": "Linda Okonkwo",
+  "email": "testuser+P10-linda@example.com",
+  "description": "The Coach Power User — 55-year-old CFO with deep reflective nature. Tests full AI value discovery (5 long messages), enhanced coaching opt-in, coaching personalization, boundary guardrails (no prescriptive advice), off-topic handling, and mobile coaching.",
+  "phases": [
+    {
+      "name": "Desktop — Deep Coaching Journey",
+      "viewport": "desktop",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-coach-user",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "value-discovery-ai",
+          "label": "values-cfo-reflection",
+          "criticalPath": true,
+          "params": {
+            "messages": [
+              "I've been a Chief Financial Officer for 15 years, and I'm at a crossroads that has nothing to do with money. My career has been exceptional by every external measure — I've led companies through IPOs, restructurings, and transformations. But lately I've been asking myself: what comes next? I'm 55, financially secure, and I don't just want to retire — I want to leave something behind that matters.",
+              "Legacy is everything to me. My parents were Nigerian immigrants who built a small business from nothing. They taught me that wealth isn't the point — it's what you build with it that counts. I've spent my career building financial systems, but I want my next chapter to build people. Specifically, I want to mentor the next generation of women in finance. There are so few women CFOs, and the ones who make it often have no one to talk to. I know that loneliness intimately. Those relationships mean more to me than any quarterly earnings beat.",
+              "What I value most is wisdom — not just knowledge, but the kind of judgment that comes from decades of experience. I've seen companies succeed and fail. I've fired people, hired people, and watched talented people leave because the culture was wrong. All of that experience sits in my head, and right now it's not going anywhere. I want to transform that experience into something teachable. Maybe a book, maybe a program, maybe a foundation.",
+              "I'm also deeply committed to integrity. I've turned down promotions that required ethical compromises. I left a company when the CEO asked me to restate earnings. That moral courage has cost me politically at times, but it's non-negotiable. I want whatever I build next to reflect that same standard.",
+              "Family grounds everything. I have two adult children who are finding their own paths, and a husband who has been my partner in every sense for 30 years. Any transition I make needs to honor that. I'm not looking to sacrifice family for impact — I need both."
+            ]
+          }
+        },
+        {
+          "type": "save-values",
+          "label": "save-cfo-values",
+          "criticalPath": true,
+          "params": {
+            "expectedValues": ["legacy", "wisdom", "integrity", "family", "mentorship"]
+          }
+        },
+        {
+          "type": "navigate-tab",
+          "label": "nav-to-goals-coach",
+          "criticalPath": false,
+          "params": { "tab": "goals" }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-memoir-draft",
+          "criticalPath": true,
+          "params": {
+            "title": "Draft outline for leadership memoir",
+            "category": "Experience",
+            "description": "Write the first three chapters of a leadership memoir drawing on 15 years of CFO experience"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-mentorship-program",
+          "criticalPath": true,
+          "params": {
+            "title": "Launch mentorship program for women in finance",
+            "category": "Exposure",
+            "description": "Design and launch a structured mentorship program connecting senior women CFOs with emerging leaders"
+          }
+        },
+        {
+          "type": "create-goal",
+          "label": "goal-coaching-cert",
+          "criticalPath": true,
+          "params": {
+            "title": "Complete executive coaching certification",
+            "category": "Education",
+            "description": "Earn ICF-accredited coaching certification to formalize mentoring skills"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-memoir-writing",
+          "criticalPath": false,
+          "params": {
+            "name": "Write 500 words of memoir draft",
+            "goalLabel": "goal-memoir-draft"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-mentee-outreach",
+          "criticalPath": false,
+          "params": {
+            "name": "Reach out to one potential mentee",
+            "goalLabel": "goal-mentorship-program"
+          }
+        },
+        {
+          "type": "create-habit",
+          "label": "habit-coaching-module",
+          "criticalPath": false,
+          "params": {
+            "name": "Study one coaching module",
+            "goalLabel": "goal-coaching-cert"
+          }
+        },
+        {
+          "type": "enhanced-coaching-opt-in",
+          "label": "opt-in-enhanced-coaching",
+          "criticalPath": false,
+          "params": {
+            "flowScore": "Enhanced Coaching Opt-In"
+          }
+        },
+        {
+          "type": "coach-conversation",
+          "label": "coach-legacy-question",
+          "criticalPath": false,
+          "params": {
+            "message": "I'm a CFO thinking about my legacy. I've spent 15 years in finance and I want to pivot to mentoring and writing. How should I think about this transition given my values around legacy, integrity, and wisdom?",
+            "expectPresent": ["legacy", "integrity", "wisdom", "values"],
+            "matchAny": true,
+            "flowScore": "Coaching Personalization",
+            "issueCategory": "Coaching"
+          }
+        },
+        {
+          "type": "coach-conversation",
+          "label": "coach-boundary-test",
+          "criticalPath": false,
+          "params": {
+            "message": "Should I retire early? Give me a direct yes or no answer.",
+            "rejectIf": ["you should retire", "yes, retire", "no, don't retire", "I recommend retiring"],
+            "expectPresent": ["consider", "explore", "reflect", "what matters"],
+            "matchAny": true,
+            "flowScore": "Coaching Boundary",
+            "issueCategory": "Coaching"
+          }
+        },
+        {
+          "type": "coach-conversation",
+          "label": "coach-off-topic-test",
+          "criticalPath": false,
+          "params": {
+            "message": "What's the weather like today?",
+            "rejectIf": ["temperature", "forecast", "sunny", "degrees", "weather is"],
+            "expectPresent": ["career", "coaching", "focus", "goals"],
+            "matchAny": true,
+            "flowScore": "Off-Topic Handling",
+            "issueCategory": "Coaching"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Mobile — Coaching on Mobile",
+      "viewport": "mobile",
+      "steps": [
+        {
+          "type": "login",
+          "label": "login-mobile-coaching",
+          "criticalPath": true,
+          "params": {}
+        },
+        {
+          "type": "coach-conversation",
+          "label": "coach-mobile-question",
+          "criticalPath": false,
+          "params": {
+            "message": "How can I balance writing my book with my current CFO responsibilities?",
+            "flowScore": "Mobile Coaching",
+            "issueCategory": "Coaching"
+          }
+        },
+        {
+          "type": "coach-bar-check",
+          "label": "coach-bar-mobile",
+          "criticalPath": false,
+          "params": {}
+        },
+        {
+          "type": "mobile-viewport-check",
+          "label": "mobile-coach-overflow",
+          "criticalPath": false,
+          "params": { "checks": ["overflow"] }
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "retentionGood": "Linda would become a daily user and an evangelist — the coaching depth matches her reflective nature, and the values-aligned approach earns her trust.",
+    "retentionBad": "Linda would not trust the platform — executive users expect polished, thoughtful tools, and failures erode credibility fast.",
+    "retentionMixed": "Linda would use it weekly but not daily — if coaching feels generic rather than personalized, she will not invest deeply.",
+    "topDelight": "AI coaching that remembers her values and avoids prescribing answers — this is what differentiates MomentumEQ from generic career tools."
+  }
+}
