@@ -3,7 +3,7 @@
  *
  * Structured diff of two synthesis.json files with fuzzy issue matching.
  * No API calls.
- * Usage: quorumux compare [--json] <baseline-dir> <current-dir>
+ * Usage: quorumux compare [--json] [--variant-threshold <0-1>] <baseline-dir> <current-dir>
  */
 
 import * as fs from 'fs';
@@ -60,6 +60,10 @@ export interface CompareResult {
   };
 }
 
+export interface CompareOptions {
+  variantThreshold?: number;
+}
+
 // ─── Matching utilities ─────────────────────────────────────────────────────
 
 const SEVERITY_ORDER: Record<string, number> = { P0: 0, P1: 1, P2: 2 };
@@ -72,12 +76,21 @@ const FILLER_ADVERBS = new Set([
 ]);
 
 const SYNONYM_MAP: Record<string, string> = {
+  // Generic synonyms
   latency: 'performance',
   freeze: 'block',
   frozen: 'block',
   stuck: 'block',
   inaccessible: 'not accessible',
   navigation: 'nav',
+  obscures: 'overlaps',
+  exceeds: 'slow',
+  delay: 'slow',
+  insufficient: 'missing',
+  tracking: 'analytics',
+  // Domain-aware synonyms — common across UX analysis titles
+  stepper: 'indicator',
+  progress: 'step',
 };
 
 /**
@@ -276,7 +289,8 @@ export function compareSyntheses(
   baseline: Synthesis,
   current: Synthesis,
   baselineId: string,
-  currentId: string
+  currentId: string,
+  options?: CompareOptions
 ): CompareResult {
   const baselineIssues = collectIssues(baseline);
   const currentIssues = collectIssues(current);
@@ -311,11 +325,12 @@ export function compareSyntheses(
   const variantBaselineIdxs = new Set<number>();
   const variantCurrentIdxs = new Set<number>();
 
+  const variantThreshold = options?.variantThreshold ?? 0.35;
   const variantCandidates: Array<{ bi: number; ci: number; similarity: number }> = [];
   for (let ci = 0; ci < unmatchedCurrent.length; ci++) {
     for (let bi = 0; bi < unmatchedBaseline.length; bi++) {
       const sim = jaccardSimilarity(unmatchedCurrent[ci].title, unmatchedBaseline[bi].title);
-      if (sim >= 0.5) {
+      if (sim >= variantThreshold) {
         variantCandidates.push({ bi, ci, similarity: sim });
       }
     }
@@ -376,12 +391,26 @@ export function compareSyntheses(
  * CLI handler: load files and print comparison
  */
 export async function runCompare(args: string[]): Promise<void> {
-  // Parse --json flag
-  const jsonFlag = args.includes('--json');
-  const positionalArgs = args.filter((a) => a !== '--json');
+  let jsonFlag = false;
+  let variantThreshold: number | undefined;
+  const positionalArgs: string[] = [];
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--json') {
+      jsonFlag = true;
+    } else if (args[i] === '--variant-threshold') {
+      variantThreshold = parseFloat(args[++i]);
+      if (isNaN(variantThreshold) || variantThreshold < 0 || variantThreshold > 1) {
+        logger.error('--variant-threshold must be a number between 0 and 1');
+        process.exit(1);
+      }
+    } else {
+      positionalArgs.push(args[i]);
+    }
+  }
 
   if (positionalArgs.length < 2) {
-    logger.error('Usage: quorumux compare [--json] <baseline-dir> <current-dir>');
+    logger.error('Usage: quorumux compare [--json] [--variant-threshold <0-1>] <baseline-dir> <current-dir>');
     process.exit(1);
   }
 
@@ -403,7 +432,8 @@ export async function runCompare(args: string[]): Promise<void> {
 
   const baselineId = path.basename(path.resolve(baselineDir));
   const currentId = path.basename(path.resolve(currentDir));
-  const result = compareSyntheses(baseline, current, baselineId, currentId);
+  const result = compareSyntheses(baseline, current, baselineId, currentId,
+    variantThreshold !== undefined ? { variantThreshold } : undefined);
 
   // Write JSON sidecar to current run's reports dir
   const currentReportsDir = path.join(path.resolve(currentDir), 'reports');

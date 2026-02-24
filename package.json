@@ -1,6 +1,6 @@
 {
   "name": "quorum-ux",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Multi-model consensus UX analysis from E2E test artifacts",
   "type": "module",
   "bin": {

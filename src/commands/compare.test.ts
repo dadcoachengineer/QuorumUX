@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compareSyntheses, jaccardSimilarity, matchIssues, normalizeTitle, generateScoreContext } from './compare.js';
+import { compareSyntheses, jaccardSimilarity, matchIssues, normalizeTitle, generateScoreContext, type CompareOptions } from './compare.js';
 import type { Synthesis } from '../types.js';
 import type { CompareIssue, CompareResult } from './compare.js';
 
@@ -537,6 +537,130 @@ describe('compareSyntheses', () => {
     expect(result.newIssues[0].id).toBe('QUX-b2');
   });
 
+  // ─── Run 7 variant detection ──────────────────────────────────────────
+
+  it('detects variant: modal blocks navigation vs modal overlay blocks interaction', () => {
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-r7a', title: 'Replace values modal blocks navigation', severity: 'P0',
+          category: 'functional', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-r7b', title: 'Values assessment modal overlay blocks interaction', severity: 'P0',
+          category: 'interaction', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-06', 'run-07');
+
+    expect(result.persistingVariants).toHaveLength(1);
+    expect(result.persistingVariants[0].similarityScore).toBeGreaterThanOrEqual(35);
+  });
+
+  it('detects variant: tooltip overlaps vs tooltip obscures (via synonym)', () => {
+    // After normalization: {tooltip, overlaps, interactive, elements} vs {tooltip, overlaps, interactive, controls}
+    // Jaccard: 3/5 = 0.6 — below primary threshold (>0.6), above variant threshold (≥0.35)
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-tip1', title: 'Tooltip overlaps interactive elements', severity: 'P1',
+          category: 'visual', description: '', recommendation: '', effort: 'medium',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-tip2', title: 'Tooltip obscures interactive controls', severity: 'P1',
+          category: 'interaction', description: '', recommendation: '', effort: 'medium',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-06', 'run-07');
+
+    expect(result.persistingVariants).toHaveLength(1);
+  });
+
+  it('detects variant: scroll tracking insufficient vs analytics missing (via synonyms)', () => {
+    // After normalization: {page, scroll, analytics, missing, for, engagement} vs {page, scroll, analytics, missing, below, fold}
+    // Jaccard: 4/8 = 0.5 — below primary threshold (>0.6), above variant threshold (≥0.35)
+    // Tests tracking→analytics and insufficient→missing synonyms
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-sd1', title: 'Page scroll tracking insufficient for engagement', severity: 'P2',
+          category: 'data', description: '', recommendation: '', effort: 'low',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-sd2', title: 'Page scroll analytics missing below fold', severity: 'P2',
+          category: 'analytics', description: '', recommendation: '', effort: 'low',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    const result = compareSyntheses(baseline, current, 'run-06', 'run-07');
+
+    expect(result.persistingVariants).toHaveLength(1);
+  });
+
+  // ─── Threshold override ─────────────────────────────────────────────
+
+  it('respects variantThreshold override to suppress variant detection', () => {
+    const baseline = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-perf1', title: 'Login performance exceeds 6 seconds', severity: 'P0',
+          category: 'performance', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+    const current = makeSynthesis({
+      consensusIssues: [
+        {
+          id: 'QUX-perf2', title: 'Login latency consistently 6-7 seconds', severity: 'P1',
+          category: 'interaction', description: '', recommendation: '', effort: 'high',
+          evidence: { screenshotModels: [], videoConfirmed: false, testRunConfirmed: false, affectedPersonas: [] },
+          temporalInsight: null,
+        },
+      ],
+    });
+
+    // At default threshold (0.35), this pair IS a variant
+    const defaultResult = compareSyntheses(baseline, current, 'run-01', 'run-02');
+    expect(defaultResult.persistingVariants).toHaveLength(1);
+
+    // With high threshold (0.9), same pair is NOT a variant
+    const strictResult = compareSyntheses(baseline, current, 'run-01', 'run-02', { variantThreshold: 0.9 });
+    expect(strictResult.persistingVariants).toHaveLength(0);
+    expect(strictResult.resolvedIssues).toHaveLength(1);
+    expect(strictResult.newIssues).toHaveLength(1);
+  });
+
   it('variant captures correct similarity score as 0-100 integer', () => {
     const baseline = makeSynthesis({
       consensusIssues: [
@@ -610,6 +734,18 @@ describe('normalizeTitle', () => {
 
   it('passes through title with no normalization needed', () => {
     expect(normalizeTitle('Login button fails on click')).toBe('login button fails on click');
+  });
+
+  it('normalizes synonyms: obscures → overlaps', () => {
+    expect(normalizeTitle('Tooltip obscures navigation controls')).toBe('tooltip overlaps nav controls');
+  });
+
+  it('normalizes synonyms: exceeds → slow', () => {
+    expect(normalizeTitle('Load time exceeds 5 seconds')).toBe('load time slow 5 seconds');
+  });
+
+  it('normalizes domain synonyms: stepper → indicator, progress → step', () => {
+    expect(normalizeTitle('Stepper progress unclear')).toBe('indicator step unclear');
   });
 });
 
