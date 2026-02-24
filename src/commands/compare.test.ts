@@ -747,6 +747,27 @@ describe('normalizeTitle', () => {
   it('normalizes domain synonyms: stepper → indicator, progress → step', () => {
     expect(normalizeTitle('Stepper progress unclear')).toBe('indicator step unclear');
   });
+
+  it('strips single bracket tag', () => {
+    expect(normalizeTitle('[P1] [Coach] Focus not trapped in coach panel')).toBe('focus not trapped in coach panel');
+  });
+
+  it('strips multiple bracket tags', () => {
+    expect(normalizeTitle('[P0] [Mobile] Alert banner blocks button')).toBe('alert banner blocks button');
+  });
+
+  it('handles titles without brackets unchanged', () => {
+    expect(normalizeTitle('Login latency exceeds 6 seconds')).toBe('login performance slow 6 seconds');
+  });
+
+  it('bracket stripping prevents category tags from diluting variant similarity', () => {
+    // Without bracket stripping: [coach] and [coach/panel] tokens dilute Jaccard to 0.31 (below 0.35)
+    // With bracket stripping: clean tokens give Jaccard 0.40 (above 0.35 threshold)
+    const titleA = '[P2] [Coach] Focus not trapped inside panel on open';
+    const titleB = '[P2] [Coach Panel] Focus not managed inside overlay on click';
+    const sim = jaccardSimilarity(titleA, titleB);
+    expect(sim).toBeGreaterThan(0.35);
+  });
 });
 
 // ─── generateScoreContext ──────────────────────────────────────────────────
