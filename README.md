@@ -120,6 +120,7 @@ Options:
   --output-dir <path>  Write reports to this directory instead of {runDir}/reports/
   --verbose            Verbose output
   --help               Show help
+  --version, -v        Print version and exit
 
 Compare options:
   --json               Output comparison as JSON to stdout
